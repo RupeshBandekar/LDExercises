@@ -14,33 +14,33 @@
         }
 
         [Theory]
-        [InlineData(0.1,0.2)]
-        public void AndProbability(decimal decProbA, decimal decProbB)
+        [InlineData(0.1,0.2, 0.02)]
+        public void AndProbability(decimal decProbA, decimal decProbB, decimal expectedResult)
         {
             Probability p1 = new Probability(decProbA);
             Probability p2 = new Probability(decProbB);
             Probability oactResult = p1.And(p2);
-            Probability oexpResult = new Probability(decProbA * decProbB);
+            Probability oexpResult = new Probability(expectedResult);
             Assert.True(oactResult.Equals(oexpResult));
         }
 
         [Theory]
-        [InlineData(0.1, 0.2)]
-        public void OrProbability(decimal decProbA, decimal decProbB)
+        [InlineData(0.1, 0.2, 0.28)]
+        public void OrProbability(decimal decProbA, decimal decProbB, decimal expectedResult)
         {
             Probability p1 = new Probability(decProbA);
             Probability p2 = new Probability(decProbB);
             Probability oactResult = p1.Or(p2);
-            Probability oexpResult = new Probability(decProbA + decProbB - (decProbA * decProbB));
+            Probability oexpResult = new Probability(expectedResult);
             Assert.True(oactResult.Equals(oexpResult));
         }
         
         [Theory]
-        [InlineData(0.5)]
-        public void InverseProbability(decimal decProbA)
+        [InlineData(0.5, 0.5)]
+        public void InverseProbability(decimal decProbA, decimal expectedResult)
         {
             Probability p1 = new Probability(decProbA);
-            Assert.Equal(1 - decProbA, p1.Inverse());
+            Assert.Equal(expectedResult, p1.Inverse());
         }
 
         [Theory]
