@@ -1,10 +1,7 @@
-﻿using System;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace AccountBalanceDomain
+﻿namespace AccountBalanceDomain
 {
+    using System;
+    using System.Collections.Generic;
     public class Account
     {
         private readonly List<IBaseAccountEvent> _allAccountEvents;
@@ -13,7 +10,9 @@ namespace AccountBalanceDomain
         private decimal _overdraftLimit;
         private decimal _dailyWireTransferLimit;
         private decimal _dailyWireTransferLimitUtilization;
+        private bool _isDailyWireLimitApplied;
         private decimal _availableFund;
+        
 
         public Account(Guid accountId)
         {
@@ -21,7 +20,7 @@ namespace AccountBalanceDomain
             _allAccountEvents = new List<IBaseAccountEvent>();
         }
 
-        public static Account Create(Guid accountId, string accountHolderName)
+        public static Account CreateAccount(Guid accountId, string accountHolderName)
         {
             if(accountId == Guid.Empty)
                 throw new ArgumentException("Invalid Account ID");
@@ -52,82 +51,106 @@ namespace AccountBalanceDomain
             if (dailyWireTransferLimit <= 0)
                     throw new ArgumentException("Invalid Daily Wire Transfer Limit");
 
-            var dailyWireTransferLimitApplied = new DailyWireTransferLimitApplied(dailyWireTransferLimit);
+            var dailyWireTransferLimitApplied = new DailyWireTransferLimitApplied(dailyWireTransferLimit, 0);
             _allAccountEvents.Add(dailyWireTransferLimitApplied);
             ApplyAccountEvents(dailyWireTransferLimitApplied);
         }
 
-        public void DepositCheque(decimal depositFund, DateTime depositDate, int chequeNumber)
+        public void DepositCheque(decimal depositFund, DateTime depositDate)
         {
             if (depositFund <= 0)
-                throw new Exception("Invalid fund value");
+                throw new ArgumentException("Invalid fund value");
             
             var clearanceBusinessDay = GetChequeClearanceDay(depositDate);
-            var chequeDeposited = new ChequeDeposited(depositFund, depositDate, chequeNumber, clearanceBusinessDay);
+            var chequeDeposited = new ChequeDeposited(depositFund, depositDate, clearanceBusinessDay);
             _allAccountEvents.Add(chequeDeposited);
+            ApplyAccountEvents(chequeDeposited);
+
+            if (_state == AccountState.Blocked)
+                UnblockAccount();
         }
 
-        public void MakeFundAvailableForDepositedCheque(DateTime clearanceBusinessDay)
+        //public void MakeFundAvailableForDepositedCheque(DateTime clearanceBusinessDay)
+        //{
+        //    var chequesToClear = GetEvents().Where(x => x.GetType() == typeof(ChequeDeposited)).ToList()
+        //        .Where(x => ((ChequeDeposited) x).ClearanceBussinessDay.Date == clearanceBusinessDay.Date);
+
+        //    var chequesCleared = GetEvents().Where(x => x.GetType() == typeof(ChequeFundMadeAvailable)).ToList()
+        //        .Where(x => ((ChequeFundMadeAvailable)x).IsCleared == true);
+
+        //    chequesToClear = chequesToClear.Where(x =>
+        //        !chequesCleared.Any(p =>
+        //            ((ChequeDeposited) x).ChequeNumber == ((ChequeFundMadeAvailable) p).ChequeNumber)).ToList();
+
+        //    foreach (ChequeDeposited cheque in chequesToClear)
+        //    {
+        //        var chequeCleared = new ChequeFundMadeAvailable(cheque.Fund, cheque.ChequeNumber, true);
+        //        _allAccountEvents.Add(chequeCleared);
+        //        ApplyAccountEvents(chequeCleared);
+
+        //        if (_state == AccountState.Blocked)
+        //        {
+        //            UnblockAccount();
+        //        }
+        //    }
+        //}
+
+        private DateTime GetChequeClearanceDay(DateTime depositDate)
         {
-            var chequesToClear = GetEvents().Where(x => x.GetType() == typeof(ChequeDeposited)).ToList()
-                .Where(x => ((ChequeDeposited) x).ClearanceBussinessDay.Date == clearanceBusinessDay.Date);
+            //Scenarios covered as per Deposit Day
+            //|Deposit Day	|Deposit Time		|Clearance Day
+            //|Monday		|Before 05:00PM		|Tuesday
+            //|Monday		|09:00AM - 05:00PM	|Tuesday
+            //|Monday		|After 05:00PM		|Wednesday
+            //|Thursday		|After 05:00PM		|Monday
+            //|Friday		|09:00AM - 05:00PM	|Monday
+            //|Friday		|After 05:00PM		|Tuesday
+            //|Saturday		|12:00AM-11:59PM	|Tuesday
+            //|Sunday		|12:00AM-11:59PM	|Tuesday
 
-            var chequesCleared = GetEvents().Where(x => x.GetType() == typeof(ChequeFundMadeAvailable)).ToList()
-                .Where(x => ((ChequeFundMadeAvailable)x).IsCleared == true);
-
-            chequesToClear = chequesToClear.Where(x =>
-                !chequesCleared.Any(p =>
-                    ((ChequeDeposited) x).ChequeNumber == ((ChequeFundMadeAvailable) p).ChequeNumber)).ToList();
-
-            foreach (ChequeDeposited cheque in chequesToClear)
-            {
-                var chequeCleared = new ChequeFundMadeAvailable(cheque.Fund, cheque.ChequeNumber, true);
-                _allAccountEvents.Add(chequeCleared);
-                ApplyAccountEvents(chequeCleared);
-
-                if (_state == AccountState.Blocked)
-                {
-                    UnblockAccount();
-                }
-            }
-        }
-
-        public DateTime GetChequeClearanceDay(DateTime depositDate)
-        {
             DateTime chequeClearanceDay = new DateTime();
-            var businessDayStartTime = DateTime.Parse("01/01/1976 09:00:00 AM");
             var businessDayEndTime = DateTime.Parse("01/01/1976 05:00:00 PM");
-            if (DayOfWeek.Monday <= depositDate.DayOfWeek && depositDate.DayOfWeek <= DayOfWeek.Thursday) //Deposit between Monday to Thursday
+            //Deposit between Monday to Thursday
+            if (DayOfWeek.Monday <= depositDate.DayOfWeek && depositDate.DayOfWeek <= DayOfWeek.Thursday) 
             {
-                if (depositDate.TimeOfDay <= businessDayEndTime.TimeOfDay) //Deposit before business end time (05:00 PM)
+                //Deposit before business end time (05:00 PM)
+                if (depositDate.TimeOfDay <= businessDayEndTime.TimeOfDay) 
                 {
                     chequeClearanceDay = depositDate.AddDays(1); //return Tuesday for Monday and so on
                 }
+                //Deposit on Thursday after business time (after 05:00 PM)
                 else if (depositDate.DayOfWeek == DayOfWeek.Thursday &&
-                         depositDate.TimeOfDay > businessDayEndTime.TimeOfDay) //Deposit on Thursday after business time (after 05:00 PM)
+                         depositDate.TimeOfDay > businessDayEndTime.TimeOfDay) 
                 {
                     chequeClearanceDay = depositDate.AddDays(4); //return Monday
                 }
-                else if (depositDate.TimeOfDay > businessDayEndTime.TimeOfDay) //Deposit after business end time (05:00 PM) Monday to Wednesday
+                //Deposit after business end time (05:00 PM) Monday to Wednesday
+                else if (depositDate.TimeOfDay > businessDayEndTime.TimeOfDay) 
                 {
                     chequeClearanceDay = depositDate.AddDays(2); //return Wednesday for Monday and so on
                 }
             }
+            //Deposit on Friday before business end time (05:00 PM)
             else if (depositDate.DayOfWeek == DayOfWeek.Friday &&
-                     depositDate.TimeOfDay <= businessDayEndTime.TimeOfDay) //Deposit on Friday before business end time (05:00 PM)
+                     depositDate.TimeOfDay <= businessDayEndTime.TimeOfDay) 
             {
                 chequeClearanceDay = depositDate.AddDays(3); //return Monday
             }
-            else if ((depositDate.DayOfWeek == DayOfWeek.Friday &&
-                      depositDate.TimeOfDay > businessDayEndTime.TimeOfDay) ||
-                     depositDate.DayOfWeek == DayOfWeek.Saturday || depositDate.DayOfWeek == DayOfWeek.Sunday)
+            //Deposit on Friday after business end time (05:00 PM)
+            else if (depositDate.DayOfWeek == DayOfWeek.Friday &&
+                     depositDate.TimeOfDay > businessDayEndTime.TimeOfDay)
             {
-                if (depositDate.DayOfWeek == DayOfWeek.Friday)
-                    chequeClearanceDay = depositDate.AddDays(4); //return Tuesday
-                else if (depositDate.DayOfWeek == DayOfWeek.Saturday)
-                    chequeClearanceDay = depositDate.AddDays(3); //return Tuesday
-                else if (depositDate.DayOfWeek == DayOfWeek.Sunday)
-                    chequeClearanceDay = depositDate.AddDays(2); //return Tuesday
+                chequeClearanceDay = depositDate.AddDays(4); //return Tuesday
+            }
+            //Deposit on Saturday
+            else if (depositDate.DayOfWeek == DayOfWeek.Saturday)
+            {
+                chequeClearanceDay = depositDate.AddDays(3); //return Tuesday
+            }
+            //Deposit on Sunday
+            else if (depositDate.DayOfWeek == DayOfWeek.Sunday)
+            {
+                chequeClearanceDay = depositDate.AddDays(2); //return Tuesday
             }
 
             return chequeClearanceDay;
@@ -143,17 +166,13 @@ namespace AccountBalanceDomain
             ApplyAccountEvents(cashDeposited);
 
             if (_state == AccountState.Blocked)
-            {
                 UnblockAccount();
-            }
         }
 
         public void WithdrawCash(decimal fundToWithdraw)
         {
             if (fundToWithdraw <= 0)
                 throw new ArgumentException("Invalid fund value");
-
-            MakeFundAvailableForDepositedCheque(DateTime.Now);
 
             if (_state == AccountState.Blocked)
                 throw new OperationCanceledException("Account is blocked");
@@ -171,29 +190,27 @@ namespace AccountBalanceDomain
             }
         }
 
-        public void WireTransfer(decimal fundToWithdraw)
+        public void WireTransfer(decimal fundToWireTransfer)
         {
-            if (fundToWithdraw <= 0)
+            if (fundToWireTransfer <= 0)
                 throw new ArgumentException("Invalid fund value");
-
-            MakeFundAvailableForDepositedCheque(DateTime.Now);
 
             if (_state == AccountState.Blocked)
                 throw new OperationCanceledException("Account is blocked");
 
-            if (((_dailyWireTransferLimit - _dailyWireTransferLimitUtilization) - fundToWithdraw) < 0)
+            if (_isDailyWireLimitApplied && ((_dailyWireTransferLimit - _dailyWireTransferLimitUtilization) - fundToWireTransfer) < 0)
             {
                 BlockAccount(BlockAccountReasonType.DailyWireTransferLimitBreach);
                 throw new OperationCanceledException("Account is blocked");
             }
-            else if ((_availableFund + _overdraftLimit - fundToWithdraw) < 0)
+            else if ((_availableFund + _overdraftLimit - fundToWireTransfer) < 0)
             {
                 BlockAccount(BlockAccountReasonType.OverdraftLimitBreach);
                 throw new OperationCanceledException("Account is blocked");
             }
             else
             {
-                var wireTransferred = new WireTransferred(fundToWithdraw);
+                var wireTransferred = new WireTransferred(fundToWireTransfer);
                 _allAccountEvents.Add(wireTransferred);
                 ApplyAccountEvents(wireTransferred);
             }
@@ -201,14 +218,14 @@ namespace AccountBalanceDomain
 
         private void BlockAccount(BlockAccountReasonType blockReasonType)
         {
-            AccountBlocked accountBlocked = new AccountBlocked();
+            AccountBlocked accountBlocked = new AccountBlocked(AccountState.Blocked);
             if (blockReasonType == BlockAccountReasonType.OverdraftLimitBreach)
             {
-                accountBlocked = new AccountBlockedOverdraftLimitBreach();
+                accountBlocked = new AccountBlockedOverdraftLimitBreach(AccountState.Blocked);
             }
             else if (blockReasonType == BlockAccountReasonType.DailyWireTransferLimitBreach)
             {
-                accountBlocked = new AccountBlockedDailyWireTransferLimitBreach();
+                accountBlocked = new AccountBlockedDailyWireTransferLimitBreach(AccountState.Blocked);
             }
 
             _allAccountEvents.Add(accountBlocked);
@@ -217,7 +234,7 @@ namespace AccountBalanceDomain
 
         private void UnblockAccount()
         {
-            var accountUnblocked = new AccountUnblocked();
+            var accountUnblocked = new AccountUnblocked(AccountState.Unblocked);
             _allAccountEvents.Add(accountUnblocked);
             ApplyAccountEvents(accountUnblocked);
         }
@@ -234,11 +251,18 @@ namespace AccountBalanceDomain
             }
             else if (e.GetType() == typeof(DailyWireTransferLimitApplied))
             {
-                _dailyWireTransferLimit = ((DailyWireTransferLimitApplied) e).DailyWireTransferLimit;
+                DailyWireTransferLimitApplied tEvent  = (DailyWireTransferLimitApplied) e;
+                _isDailyWireLimitApplied = true;
+                _dailyWireTransferLimit = tEvent.DailyWireTransferLimit;
+                _dailyWireTransferLimitUtilization = tEvent.DailyWireTransferLimitUtilization;
             }
-            else if (e.GetType() == typeof(ChequeFundMadeAvailable))
+            else if (e.GetType() == typeof(ChequeDeposited))
             {
-                _availableFund = _availableFund + ((ChequeFundMadeAvailable) e).Fund;
+                ChequeDeposited tEvent = (ChequeDeposited) e;
+                if (tEvent.ClearanceBussinessDay.Date <= DateTime.Today.Date)
+                {
+                    _availableFund = _availableFund + tEvent.Fund;
+                }
             }
             else if (e.GetType() == typeof(CashDeposited))
             {
@@ -250,17 +274,18 @@ namespace AccountBalanceDomain
             }
             else if (e.GetType() == typeof(WireTransferred))
             {
-                _availableFund = _availableFund - ((WireTransferred) e).Fund;
-                _dailyWireTransferLimitUtilization = _dailyWireTransferLimitUtilization + ((WireTransferred) e).Fund;
+                WireTransferred tEvent = (WireTransferred) e;
+                _availableFund = _availableFund - tEvent.Fund;
+                _dailyWireTransferLimitUtilization = _dailyWireTransferLimitUtilization + tEvent.Fund;
             }
             else if (e.GetType() == typeof(AccountBlockedDailyWireTransferLimitBreach) ||
                      e.GetType() == typeof(AccountBlockedOverdraftLimitBreach))
             {
-                _state = AccountState.Blocked;
+                _state = ((AccountBlocked)e).AccountState;
             }
             else if (e.GetType() == typeof(AccountUnblocked))
             {
-                _state = AccountState.Unblocked;
+                _state = ((AccountUnblocked) e).AccountState;
             }
         }
 

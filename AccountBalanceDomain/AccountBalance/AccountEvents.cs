@@ -1,17 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AccountBalanceDomain
+﻿namespace AccountBalanceDomain
 {
-    public interface IBaseAccountEvent
-    {
-    }
-
+    using System;
     public class AccountCreated : IBaseAccountEvent
     {
         public readonly Guid AccountId;
@@ -25,7 +14,7 @@ namespace AccountBalanceDomain
 
     public class OverdraftLimitApplied : IBaseAccountEvent
     {
-        public decimal OverdraftLimit { get; set; }
+        public readonly decimal OverdraftLimit;
 
         public OverdraftLimitApplied(decimal overdraftLimit)
         {
@@ -35,47 +24,33 @@ namespace AccountBalanceDomain
 
     public class DailyWireTransferLimitApplied : IBaseAccountEvent
     {
-        public decimal DailyWireTransferLimit { get; set; }
+        public readonly decimal DailyWireTransferLimit;
+        public readonly decimal DailyWireTransferLimitUtilization;
 
-        public DailyWireTransferLimitApplied(decimal dailyWireTransferLimit)
+        public DailyWireTransferLimitApplied(decimal dailyWireTransferLimit, decimal dailyWireTransferLimitUtilization)
         {
             DailyWireTransferLimit = dailyWireTransferLimit;
+            DailyWireTransferLimitUtilization = dailyWireTransferLimitUtilization;
         }
     }
 
     public class ChequeDeposited : IBaseAccountEvent
     {
-        public decimal Fund { get; set; }
-        public DateTime DepositDate { get; set; }
-        public int ChequeNumber { get; set; }
-        public DateTime ClearanceBussinessDay { get; set; }
+        public readonly decimal Fund;
+        public readonly DateTime DepositDate;
+        public readonly DateTime ClearanceBussinessDay;
 
-        public ChequeDeposited(decimal fund, DateTime depositDate, int chequeNumber, DateTime clearanceBusinessDay)
+        public ChequeDeposited(decimal fund, DateTime depositDate, DateTime clearanceBusinessDay)
         {
             Fund = fund;
             DepositDate = depositDate;
-            ChequeNumber = chequeNumber;
             ClearanceBussinessDay = clearanceBusinessDay;
         }
     }
-
-    public class ChequeFundMadeAvailable : IBaseAccountEvent
-    {
-        public decimal Fund { get; set; }
-        public int ChequeNumber { get; set; }
-        public bool IsCleared { get; set; }
-
-        public ChequeFundMadeAvailable(decimal fund, int chequeNumber, bool isCleared)
-        {
-            Fund = fund;
-            ChequeNumber = chequeNumber;
-            IsCleared = isCleared;
-        }
-    }
-
+    
     public class CashDeposited : IBaseAccountEvent
     {
-        public decimal Fund { get; set; }
+        public readonly decimal Fund;
 
         public CashDeposited(decimal fund)
         {
@@ -85,7 +60,7 @@ namespace AccountBalanceDomain
 
     public class CashWithdrew : IBaseAccountEvent
     {
-        public decimal Fund;
+        public readonly decimal Fund;
 
         public CashWithdrew(decimal fund)
         {
@@ -95,7 +70,7 @@ namespace AccountBalanceDomain
 
     public class WireTransferred : IBaseAccountEvent
     {
-        public decimal Fund;
+        public readonly decimal Fund;
 
         public WireTransferred(decimal fund)
         {
@@ -105,29 +80,35 @@ namespace AccountBalanceDomain
 
     public class AccountBlocked : IBaseAccountEvent
     {
-        public AccountState AccountState;
+        public readonly AccountState AccountState;
 
-        public AccountBlocked()
+        public AccountBlocked(AccountState accountState)
         {
-            AccountState = AccountState.Blocked;
+            AccountState = accountState;
         }
     }
 
     public class AccountBlockedOverdraftLimitBreach : AccountBlocked
     {
+        public AccountBlockedOverdraftLimitBreach(AccountState accountState) : base(accountState)
+        {
+        }
     }
 
     public class AccountBlockedDailyWireTransferLimitBreach : AccountBlocked
     {
+        public AccountBlockedDailyWireTransferLimitBreach(AccountState accountState) : base(accountState)
+        {
+        }
     }
 
     public class AccountUnblocked : IBaseAccountEvent
     {
-        public AccountState AccountState;
+        public readonly AccountState AccountState;
 
-        public AccountUnblocked()
+        public AccountUnblocked(AccountState accountState)
         {
-            AccountState = AccountState.Unblocked;
+            AccountState = accountState;
         }
     }
 }
