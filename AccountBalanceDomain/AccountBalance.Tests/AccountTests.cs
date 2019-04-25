@@ -241,6 +241,23 @@
         }
 
         [Theory]
+        [InlineData(500.00, 1000.00)]
+        [Trait("Account_Balance", "6_Withdraw_Cash")]
+        public void should_throw_exception_on_withdraw_from_blocked_account(decimal overdraftLimit, decimal fundToWithdraw)
+        {
+            var account = Account.CreateAccount(Guid.NewGuid(), "Account_Holder1");
+            account.SetOverdraftLimit(overdraftLimit);
+            Assert.Throws<OperationCanceledException>(() => account.WithdrawCash(fundToWithdraw));
+            var exception = Assert.Throws<OperationCanceledException>(() => account.WithdrawCash(fundToWithdraw));
+            var cashWithdrewEvent = account.GetEvents();
+            Assert.Equal(3, cashWithdrewEvent.Count);
+            Assert.IsType<AccountCreated>(cashWithdrewEvent[0]);
+            Assert.IsType<OverdraftLimitApplied>(cashWithdrewEvent[1]);
+            Assert.IsType<AccountBlockedOverdraftLimitBreach>(cashWithdrewEvent[2]);
+            Assert.Equal("Account is blocked", exception.Message);
+        }
+
+        [Theory]
         [InlineData(500.00, 1000.00, 500.00)]
         [Trait("Account_Balance", "7_Wire_Transfer")]
         public void should_wire_transfer(decimal availableFund, decimal wireTransferLimit, decimal fundToWireTransfer)
@@ -326,6 +343,26 @@
             Assert.IsType<CashDeposited>(accountBlockedEvent[2]);
             Assert.IsType<WireTransferred>(accountBlockedEvent[3]);
             Assert.IsType<AccountBlockedDailyWireTransferLimitBreach>(accountBlockedEvent[4]);
+        }
+
+        [Theory]
+        [InlineData(1000.00, 500.00, 700.00)]
+        [Trait("Account_Balance", "7_Wire_Transfer")]
+        public void should_throw_exception_on_wire_transfer_from_blocked_account(decimal availableFund,
+            decimal wireTransferLimit, decimal fundToWireTransfer)
+        {
+            var account = Account.CreateAccount(Guid.NewGuid(), "Account_Holder1");
+            account.SetDailyWireTransferLimit(wireTransferLimit);
+            account.DepositCash(availableFund);
+            Assert.Throws<OperationCanceledException>(() => account.WireTransfer(fundToWireTransfer, DateTime.Today));
+            var exception = Assert.Throws<OperationCanceledException>(() => account.WireTransfer(fundToWireTransfer, DateTime.Today));
+            var wireTransferredEvent = account.GetEvents();
+            Assert.Equal(4, wireTransferredEvent.Count);
+            Assert.IsType<AccountCreated>(wireTransferredEvent[0]);
+            Assert.IsType<DailyWireTransferLimitApplied>(wireTransferredEvent[1]);
+            Assert.IsType<CashDeposited>(wireTransferredEvent[2]);
+            Assert.IsType<AccountBlockedDailyWireTransferLimitBreach>(wireTransferredEvent[3]);
+            Assert.Equal("Account is blocked", exception.Message);
         }
 
         [Theory]
