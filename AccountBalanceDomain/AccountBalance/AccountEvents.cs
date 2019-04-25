@@ -1,114 +1,128 @@
 ﻿namespace AccountBalanceDomain
 {
     using System;
+
     public class AccountCreated : IBaseAccountEvent
     {
         public readonly Guid AccountId;
         public readonly string AccountHolderName;
-        public AccountCreated(Guid id, string accountHolderName)
+
+        public AccountCreated(Guid accountId, string accountHolderName)
         {
-            AccountId = id;
+            AccountId = accountId;
             AccountHolderName = accountHolderName;
         }
     }
 
     public class OverdraftLimitApplied : IBaseAccountEvent
     {
+        public readonly Guid AccountId;
         public readonly decimal OverdraftLimit;
 
-        public OverdraftLimitApplied(decimal overdraftLimit)
+        public OverdraftLimitApplied(Guid accountId, decimal overdraftLimit)
         {
+            AccountId = accountId;
             OverdraftLimit = overdraftLimit;
         }
     }
 
     public class DailyWireTransferLimitApplied : IBaseAccountEvent
     {
+        public readonly Guid AccountId;
         public readonly decimal DailyWireTransferLimit;
-        public readonly decimal DailyWireTransferLimitUtilization;
 
-        public DailyWireTransferLimitApplied(decimal dailyWireTransferLimit, decimal dailyWireTransferLimitUtilization)
+        public DailyWireTransferLimitApplied(Guid accountId, decimal dailyWireTransferLimit)
         {
+            AccountId = accountId;
             DailyWireTransferLimit = dailyWireTransferLimit;
-            DailyWireTransferLimitUtilization = dailyWireTransferLimitUtilization;
         }
     }
 
     public class ChequeDeposited : IBaseAccountEvent
     {
+        public readonly Guid AccountId;
         public readonly decimal Fund;
         public readonly DateTime DepositDate;
-        public readonly DateTime ClearanceBussinessDay;
+        public readonly DateTime ClearanceBusinessDay;
 
-        public ChequeDeposited(decimal fund, DateTime depositDate, DateTime clearanceBusinessDay)
+        public ChequeDeposited(Guid accountId, decimal fund, DateTime depositDate, DateTime clearanceBusinessDay)
         {
+            AccountId = accountId;
             Fund = fund;
             DepositDate = depositDate;
-            ClearanceBussinessDay = clearanceBusinessDay;
+            ClearanceBusinessDay = clearanceBusinessDay;
         }
     }
-    
+
     public class CashDeposited : IBaseAccountEvent
     {
+        public readonly Guid AccountId;
         public readonly decimal Fund;
 
-        public CashDeposited(decimal fund)
+        public CashDeposited(Guid accountId, decimal fund)
         {
+            AccountId = accountId;
             Fund = fund;
         }
     }
 
     public class CashWithdrew : IBaseAccountEvent
     {
+        public readonly Guid AccountId;
         public readonly decimal Fund;
 
-        public CashWithdrew(decimal fund)
+        public CashWithdrew(Guid accountId, decimal fund)
         {
+            AccountId = accountId;
             Fund = fund;
         }
     }
 
     public class WireTransferred : IBaseAccountEvent
     {
+        public readonly Guid AccountId;
         public readonly decimal Fund;
+        public readonly DateTime WireTransferDate;
 
-        public WireTransferred(decimal fund)
+        public WireTransferred(Guid accountId, decimal fund, DateTime wireTransferDate)
         {
+            AccountId = accountId;
             Fund = fund;
+            WireTransferDate = wireTransferDate;
         }
     }
 
     public class AccountBlocked : IBaseAccountEvent
     {
-        public readonly AccountState AccountState;
+        public readonly Guid AccountId;
 
-        public AccountBlocked(AccountState accountState)
+        public AccountBlocked(Guid accountId)
         {
-            AccountState = accountState;
+            AccountId = accountId;
         }
     }
 
     public class AccountBlockedOverdraftLimitBreach : AccountBlocked
     {
-        public AccountBlockedOverdraftLimitBreach(AccountState accountState) : base(accountState)
+        public AccountBlockedOverdraftLimitBreach(Guid accountId) : base(accountId)
         {
         }
     }
 
     public class AccountBlockedDailyWireTransferLimitBreach : AccountBlocked
     {
-        public AccountBlockedDailyWireTransferLimitBreach(AccountState accountState) : base(accountState)
+        public AccountBlockedDailyWireTransferLimitBreach(Guid accountId) : base(accountId)
         {
         }
     }
 
     public class AccountUnblocked : IBaseAccountEvent
     {
-        public readonly AccountState AccountState;
+        public readonly Guid AccountId;
 
-        public AccountUnblocked(AccountState accountState)
+        public AccountUnblocked(Guid accountId)
         {
-            AccountState = accountState;
+            AccountId = accountId;
         }
     }
 }

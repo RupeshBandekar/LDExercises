@@ -1,4 +1,6 @@
-﻿namespace AccountBalanceDomain
+﻿using System.Linq;
+
+namespace AccountBalanceDomain
 {
     using System;
     using System.Collections.Generic;
@@ -10,7 +12,6 @@
         private decimal _overdraftLimit;
         private decimal _dailyWireTransferLimit;
         private decimal _dailyWireTransferLimitUtilization;
-        private bool _isDailyWireLimitApplied;
         private decimal _availableFund;
         
 
@@ -41,7 +42,7 @@
             if (overdraftLimit <= 0)
                 throw new ArgumentException("Invalid Overdraft Limit");
 
-            var overdraftLimitApplied = new OverdraftLimitApplied(overdraftLimit);
+            var overdraftLimitApplied = new OverdraftLimitApplied(_accountId, overdraftLimit);
             _allAccountEvents.Add(overdraftLimitApplied);
             ApplyAccountEvents(overdraftLimitApplied);
         }
@@ -51,7 +52,7 @@
             if (dailyWireTransferLimit <= 0)
                     throw new ArgumentException("Invalid Daily Wire Transfer Limit");
 
-            var dailyWireTransferLimitApplied = new DailyWireTransferLimitApplied(dailyWireTransferLimit, 0);
+            var dailyWireTransferLimitApplied = new DailyWireTransferLimitApplied(_accountId, dailyWireTransferLimit);
             _allAccountEvents.Add(dailyWireTransferLimitApplied);
             ApplyAccountEvents(dailyWireTransferLimitApplied);
         }
@@ -62,38 +63,13 @@
                 throw new ArgumentException("Invalid fund value");
             
             var clearanceBusinessDay = GetChequeClearanceDay(depositDate);
-            var chequeDeposited = new ChequeDeposited(depositFund, depositDate, clearanceBusinessDay);
+            var chequeDeposited = new ChequeDeposited(_accountId, depositFund, depositDate, clearanceBusinessDay);
             _allAccountEvents.Add(chequeDeposited);
             ApplyAccountEvents(chequeDeposited);
 
             if (_state == AccountState.Blocked)
                 UnblockAccount();
         }
-
-        //public void MakeFundAvailableForDepositedCheque(DateTime clearanceBusinessDay)
-        //{
-        //    var chequesToClear = GetEvents().Where(x => x.GetType() == typeof(ChequeDeposited)).ToList()
-        //        .Where(x => ((ChequeDeposited) x).ClearanceBussinessDay.Date == clearanceBusinessDay.Date);
-
-        //    var chequesCleared = GetEvents().Where(x => x.GetType() == typeof(ChequeFundMadeAvailable)).ToList()
-        //        .Where(x => ((ChequeFundMadeAvailable)x).IsCleared == true);
-
-        //    chequesToClear = chequesToClear.Where(x =>
-        //        !chequesCleared.Any(p =>
-        //            ((ChequeDeposited) x).ChequeNumber == ((ChequeFundMadeAvailable) p).ChequeNumber)).ToList();
-
-        //    foreach (ChequeDeposited cheque in chequesToClear)
-        //    {
-        //        var chequeCleared = new ChequeFundMadeAvailable(cheque.Fund, cheque.ChequeNumber, true);
-        //        _allAccountEvents.Add(chequeCleared);
-        //        ApplyAccountEvents(chequeCleared);
-
-        //        if (_state == AccountState.Blocked)
-        //        {
-        //            UnblockAccount();
-        //        }
-        //    }
-        //}
 
         private DateTime GetChequeClearanceDay(DateTime depositDate)
         {
@@ -161,7 +137,7 @@
             if(fund <= 0)
                 throw new ArgumentException("Invalid fund value");
 
-            var cashDeposited = new CashDeposited(fund);
+            var cashDeposited = new CashDeposited(_accountId, fund);
             _allAccountEvents.Add(cashDeposited);
             ApplyAccountEvents(cashDeposited);
 
@@ -177,20 +153,24 @@
             if (_state == AccountState.Blocked)
                 throw new OperationCanceledException("Account is blocked");
 
-            if ((_availableFund + _overdraftLimit - fundToWithdraw) < 0)
+            if (_overdraftLimit == 0 && _availableFund - fundToWithdraw < 0)
+            {
+                throw new OperationCanceledException("Fund insufficient");
+            }
+            else if ((_availableFund + _overdraftLimit - fundToWithdraw) < 0)
             {
                 BlockAccount(BlockAccountReasonType.OverdraftLimitBreach);
                 throw new OperationCanceledException("Account is blocked");
             }
             else
             {
-                var cashWithdrew = new CashWithdrew(fundToWithdraw);
+                var cashWithdrew = new CashWithdrew(_accountId, fundToWithdraw);
                 _allAccountEvents.Add(cashWithdrew);
                 ApplyAccountEvents(cashWithdrew);
             }
         }
 
-        public void WireTransfer(decimal fundToWireTransfer)
+        public void WireTransfer(decimal fundToWireTransfer, DateTime wireTransferDate)
         {
             if (fundToWireTransfer <= 0)
                 throw new ArgumentException("Invalid fund value");
@@ -198,34 +178,39 @@
             if (_state == AccountState.Blocked)
                 throw new OperationCanceledException("Account is blocked");
 
-            if (_isDailyWireLimitApplied && ((_dailyWireTransferLimit - _dailyWireTransferLimitUtilization) - fundToWireTransfer) < 0)
+            if (_overdraftLimit == 0 && _availableFund - fundToWireTransfer < 0)
             {
-                BlockAccount(BlockAccountReasonType.DailyWireTransferLimitBreach);
-                throw new OperationCanceledException("Account is blocked");
+                throw new OperationCanceledException("Fund insufficient");
             }
-            else if ((_availableFund + _overdraftLimit - fundToWireTransfer) < 0)
+
+            if ((_availableFund + _overdraftLimit - fundToWireTransfer) < 0)
             {
                 BlockAccount(BlockAccountReasonType.OverdraftLimitBreach);
                 throw new OperationCanceledException("Account is blocked");
             }
-            else
+
+            if (((_dailyWireTransferLimit - _dailyWireTransferLimitUtilization) - fundToWireTransfer) < 0)
             {
-                var wireTransferred = new WireTransferred(fundToWireTransfer);
-                _allAccountEvents.Add(wireTransferred);
-                ApplyAccountEvents(wireTransferred);
+                BlockAccount(BlockAccountReasonType.DailyWireTransferLimitBreach);
+                throw new OperationCanceledException("Account is blocked");
             }
+
+            var wireTransferred = new WireTransferred(_accountId, fundToWireTransfer, wireTransferDate);
+            _allAccountEvents.Add(wireTransferred);
+            ApplyAccountEvents(wireTransferred);
+
         }
 
         private void BlockAccount(BlockAccountReasonType blockReasonType)
         {
-            AccountBlocked accountBlocked = new AccountBlocked(AccountState.Blocked);
+            AccountBlocked accountBlocked = new AccountBlocked(_accountId);
             if (blockReasonType == BlockAccountReasonType.OverdraftLimitBreach)
             {
-                accountBlocked = new AccountBlockedOverdraftLimitBreach(AccountState.Blocked);
+                accountBlocked = new AccountBlockedOverdraftLimitBreach(_accountId);
             }
             else if (blockReasonType == BlockAccountReasonType.DailyWireTransferLimitBreach)
             {
-                accountBlocked = new AccountBlockedDailyWireTransferLimitBreach(AccountState.Blocked);
+                accountBlocked = new AccountBlockedDailyWireTransferLimitBreach(_accountId);
             }
 
             _allAccountEvents.Add(accountBlocked);
@@ -234,7 +219,7 @@
 
         private void UnblockAccount()
         {
-            var accountUnblocked = new AccountUnblocked(AccountState.Unblocked);
+            var accountUnblocked = new AccountUnblocked(_accountId);
             _allAccountEvents.Add(accountUnblocked);
             ApplyAccountEvents(accountUnblocked);
         }
@@ -251,15 +236,18 @@
             }
             else if (e.GetType() == typeof(DailyWireTransferLimitApplied))
             {
-                DailyWireTransferLimitApplied tEvent  = (DailyWireTransferLimitApplied) e;
-                _isDailyWireLimitApplied = true;
+                DailyWireTransferLimitApplied tEvent = (DailyWireTransferLimitApplied) e;
                 _dailyWireTransferLimit = tEvent.DailyWireTransferLimit;
-                _dailyWireTransferLimitUtilization = tEvent.DailyWireTransferLimitUtilization;
             }
             else if (e.GetType() == typeof(ChequeDeposited))
             {
                 ChequeDeposited tEvent = (ChequeDeposited) e;
-                if (tEvent.ClearanceBussinessDay.Date <= DateTime.Today.Date)
+                if (tEvent.ClearanceBusinessDay.Date < DateTime.Today.Date)
+                {
+                    _availableFund = _availableFund + tEvent.Fund;
+                }
+                else if (tEvent.ClearanceBusinessDay.Date == DateTime.Today.Date &&
+                         DateTime.Now.TimeOfDay >= Convert.ToDateTime("09:00:00 AM").TimeOfDay)
                 {
                     _availableFund = _availableFund + tEvent.Fund;
                 }
@@ -276,16 +264,19 @@
             {
                 WireTransferred tEvent = (WireTransferred) e;
                 _availableFund = _availableFund - tEvent.Fund;
-                _dailyWireTransferLimitUtilization = _dailyWireTransferLimitUtilization + tEvent.Fund;
+
+                if (tEvent.WireTransferDate == DateTime.Today.Date)
+                {
+                    _dailyWireTransferLimitUtilization = _dailyWireTransferLimitUtilization + tEvent.Fund;
+                }
             }
-            else if (e.GetType() == typeof(AccountBlockedDailyWireTransferLimitBreach) ||
-                     e.GetType() == typeof(AccountBlockedOverdraftLimitBreach))
+            else if (e.GetType().BaseType == typeof(AccountBlocked))
             {
-                _state = ((AccountBlocked)e).AccountState;
+                _state = AccountState.Blocked;
             }
             else if (e.GetType() == typeof(AccountUnblocked))
             {
-                _state = ((AccountUnblocked) e).AccountState;
+                _state = AccountState.Unblocked;
             }
         }
 
