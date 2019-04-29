@@ -253,7 +253,8 @@
             Assert.Equal(3, cashWithdrewEvent.Count);
             Assert.IsType<AccountCreated>(cashWithdrewEvent[0]);
             Assert.IsType<OverdraftLimitApplied>(cashWithdrewEvent[1]);
-            Assert.IsType<AccountBlockedOverdraftLimitBreach>(cashWithdrewEvent[2]);
+            Assert.IsType<AccountBlocked>(cashWithdrewEvent[2]);
+            Assert.Equal("Overdraft limit breached", ((AccountBlocked)cashWithdrewEvent[2]).ReasonForAccountBlock);
             Assert.Equal("Account is blocked", exception.Message);
         }
 
@@ -342,7 +343,8 @@
             Assert.IsType<DailyWireTransferLimitApplied>(accountBlockedEvent[1]);
             Assert.IsType<CashDeposited>(accountBlockedEvent[2]);
             Assert.IsType<WireTransferred>(accountBlockedEvent[3]);
-            Assert.IsType<AccountBlockedDailyWireTransferLimitBreach>(accountBlockedEvent[4]);
+            Assert.IsType<AccountBlocked>(accountBlockedEvent[4]);
+            Assert.Equal("Daily wire transfer limit breached", ((AccountBlocked)accountBlockedEvent[4]).ReasonForAccountBlock);
         }
 
         [Theory]
@@ -361,7 +363,8 @@
             Assert.IsType<AccountCreated>(wireTransferredEvent[0]);
             Assert.IsType<DailyWireTransferLimitApplied>(wireTransferredEvent[1]);
             Assert.IsType<CashDeposited>(wireTransferredEvent[2]);
-            Assert.IsType<AccountBlockedDailyWireTransferLimitBreach>(wireTransferredEvent[3]);
+            Assert.IsType<AccountBlocked>(wireTransferredEvent[3]);
+            Assert.Equal("Daily wire transfer limit breached", ((AccountBlocked)wireTransferredEvent[3]).ReasonForAccountBlock);
             Assert.Equal("Account is blocked", exception.Message);
         }
 
@@ -380,7 +383,8 @@
             Assert.IsType<AccountCreated>(accountBlockedEvent[0]);
             Assert.IsType<OverdraftLimitApplied>(accountBlockedEvent[1]);
             Assert.IsType<CashDeposited>(accountBlockedEvent[2]);
-            Assert.IsType<AccountBlockedOverdraftLimitBreach>(accountBlockedEvent[3]);
+            Assert.IsType<AccountBlocked>(accountBlockedEvent[3]);
+            Assert.Equal("Overdraft limit breached", ((AccountBlocked)accountBlockedEvent[3]).ReasonForAccountBlock);
         }
 
         [Theory]
@@ -400,7 +404,8 @@
             Assert.IsType<OverdraftLimitApplied>(accountBlockedEvent[1]);
             Assert.IsType<DailyWireTransferLimitApplied>(accountBlockedEvent[2]);
             Assert.IsType<CashDeposited>(accountBlockedEvent[3]);
-            Assert.IsType<AccountBlockedOverdraftLimitBreach>(accountBlockedEvent[4]);
+            Assert.IsType<AccountBlocked>(accountBlockedEvent[4]);
+            Assert.Equal("Overdraft limit breached", ((AccountBlocked)accountBlockedEvent[4]).ReasonForAccountBlock);
         }
 
         [Theory]
@@ -419,7 +424,8 @@
             Assert.IsType<AccountCreated>(accountUnblockedEvent[0]);
             Assert.IsType<OverdraftLimitApplied>(accountUnblockedEvent[1]);
             Assert.IsType<CashDeposited>(accountUnblockedEvent[2]);
-            Assert.IsType<AccountBlockedOverdraftLimitBreach>(accountUnblockedEvent[3]);
+            Assert.IsType<AccountBlocked>(accountUnblockedEvent[3]);
+            Assert.Equal("Overdraft limit breached", ((AccountBlocked)accountUnblockedEvent[3]).ReasonForAccountBlock);
             Assert.IsType<CashDeposited>(accountUnblockedEvent[4]);
             Assert.IsType<AccountUnblocked>(accountUnblockedEvent[5]);
         }
@@ -439,7 +445,8 @@
             Assert.IsType<AccountCreated>(accountUnblockedEvent[0]);
             Assert.IsType<OverdraftLimitApplied>(accountUnblockedEvent[1]);
             Assert.IsType<CashDeposited>(accountUnblockedEvent[2]);
-            Assert.IsType<AccountBlockedOverdraftLimitBreach>(accountUnblockedEvent[3]);
+            Assert.IsType<AccountBlocked>(accountUnblockedEvent[3]);
+            Assert.Equal("Overdraft limit breached", ((AccountBlocked)accountUnblockedEvent[3]).ReasonForAccountBlock);
             Assert.IsType<ChequeDeposited>(accountUnblockedEvent[4]);
             Assert.IsType<AccountUnblocked>(accountUnblockedEvent[5]);
             Assert.IsType<CashWithdrew>(accountUnblockedEvent[6]);

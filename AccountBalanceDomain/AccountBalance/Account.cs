@@ -203,14 +203,14 @@ namespace AccountBalanceDomain
 
         private void BlockAccount(BlockAccountReasonType blockReasonType)
         {
-            AccountBlocked accountBlocked = new AccountBlocked(_accountId);
+            AccountBlocked accountBlocked = null;
             if (blockReasonType == BlockAccountReasonType.OverdraftLimitBreach)
             {
-                accountBlocked = new AccountBlockedOverdraftLimitBreach(_accountId);
+                accountBlocked = new AccountBlocked(_accountId, "Overdraft limit breached");
             }
             else if (blockReasonType == BlockAccountReasonType.DailyWireTransferLimitBreach)
             {
-                accountBlocked = new AccountBlockedDailyWireTransferLimitBreach(_accountId);
+                accountBlocked = new AccountBlocked(_accountId, "Daily wire transfer limit breached");
             }
 
             _allAccountEvents.Add(accountBlocked);
@@ -270,7 +270,7 @@ namespace AccountBalanceDomain
                     _dailyWireTransferLimitUtilization = _dailyWireTransferLimitUtilization + tEvent.Fund;
                 }
             }
-            else if (e.GetType().BaseType == typeof(AccountBlocked))
+            else if (e.GetType() == typeof(AccountBlocked))
             {
                 _state = AccountState.Blocked;
             }

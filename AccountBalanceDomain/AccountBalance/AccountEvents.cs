@@ -95,26 +95,28 @@
     public class AccountBlocked : IBaseAccountEvent
     {
         public readonly Guid AccountId;
+        public readonly string ReasonForAccountBlock;
 
-        public AccountBlocked(Guid accountId)
+        public AccountBlocked(Guid accountId, string reasonForAccountBlock)
         {
             AccountId = accountId;
+            ReasonForAccountBlock = reasonForAccountBlock;
         }
     }
 
-    public class AccountBlockedOverdraftLimitBreach : AccountBlocked
-    {
-        public AccountBlockedOverdraftLimitBreach(Guid accountId) : base(accountId)
-        {
-        }
-    }
+    //public class AccountBlockedOverdraftLimitBreach : AccountBlocked
+    //{
+    //    public AccountBlockedOverdraftLimitBreach(Guid accountId) : base(accountId)
+    //    {
+    //    }
+    //}
 
-    public class AccountBlockedDailyWireTransferLimitBreach : AccountBlocked
-    {
-        public AccountBlockedDailyWireTransferLimitBreach(Guid accountId) : base(accountId)
-        {
-        }
-    }
+    //public class AccountBlockedDailyWireTransferLimitBreach : AccountBlocked
+    //{
+    //    public AccountBlockedDailyWireTransferLimitBreach(Guid accountId) : base(accountId)
+    //    {
+    //    }
+    //}
 
     public class AccountUnblocked : IBaseAccountEvent
     {
