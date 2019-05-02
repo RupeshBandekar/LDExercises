@@ -164,7 +164,7 @@ namespace AccountBalanceDomain
             }
             else
             {
-                var cashWithdrew = new CashWithdrew(_accountId, fundToWithdraw);
+                var cashWithdrew = new CashWithdrawn(_accountId, fundToWithdraw);
                 _allAccountEvents.Add(cashWithdrew);
                 ApplyAccountEvents(cashWithdrew);
             }
@@ -256,9 +256,9 @@ namespace AccountBalanceDomain
             {
                 _availableFund = _availableFund + ((CashDeposited) e).Fund;
             }
-            else if (e.GetType() == typeof(CashWithdrew))
+            else if (e.GetType() == typeof(CashWithdrawn))
             {
-                _availableFund = _availableFund - ((CashWithdrew) e).Fund;
+                _availableFund = _availableFund - ((CashWithdrawn) e).Fund;
             }
             else if (e.GetType() == typeof(WireTransferred))
             {

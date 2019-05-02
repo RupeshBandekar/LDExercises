@@ -155,8 +155,8 @@
             Assert.Equal(3, fundAvailableEvent.Count);
             Assert.IsType<AccountCreated>(fundAvailableEvent[0]);
             Assert.IsType<ChequeDeposited>(fundAvailableEvent[1]);
-            Assert.IsType<CashWithdrew>(fundAvailableEvent[2]);
-            Assert.Equal(fund, ((CashWithdrew) fundAvailableEvent[2]).Fund);
+            Assert.IsType<CashWithdrawn>(fundAvailableEvent[2]);
+            Assert.Equal(fund, ((CashWithdrawn) fundAvailableEvent[2]).Fund);
         }
 
         [Theory]
@@ -195,8 +195,8 @@
             Assert.Equal(3, cashWithdrewEvent.Count);
             Assert.IsType<AccountCreated>(cashWithdrewEvent[0]);
             Assert.IsType<CashDeposited>(cashWithdrewEvent[1]);
-            Assert.IsType<CashWithdrew>(cashWithdrewEvent[2]);
-            Assert.Equal(fundToWithdraw, ((CashWithdrew) cashWithdrewEvent[2]).Fund);
+            Assert.IsType<CashWithdrawn>(cashWithdrewEvent[2]);
+            Assert.Equal(fundToWithdraw, ((CashWithdrawn) cashWithdrewEvent[2]).Fund);
         }
 
         [Theory]
@@ -225,8 +225,8 @@
             Assert.Equal(3, cashWithdrewEvent.Count);
             Assert.IsType<AccountCreated>(cashWithdrewEvent[0]);
             Assert.IsType<CashDeposited>(cashWithdrewEvent[1]);
-            Assert.IsType<CashWithdrew>(cashWithdrewEvent[2]);
-            Assert.Equal(fundToWithdraw, ((CashWithdrew) cashWithdrewEvent[2]).Fund);
+            Assert.IsType<CashWithdrawn>(cashWithdrewEvent[2]);
+            Assert.Equal(fundToWithdraw, ((CashWithdrawn) cashWithdrewEvent[2]).Fund);
             Assert.Equal("Fund insufficient", exception.Message);
         }
 
@@ -449,7 +449,7 @@
             Assert.Equal("Overdraft limit breached", ((AccountBlocked)accountUnblockedEvent[3]).ReasonForAccountBlock);
             Assert.IsType<ChequeDeposited>(accountUnblockedEvent[4]);
             Assert.IsType<AccountUnblocked>(accountUnblockedEvent[5]);
-            Assert.IsType<CashWithdrew>(accountUnblockedEvent[6]);
+            Assert.IsType<CashWithdrawn>(accountUnblockedEvent[6]);
         }
     }
 }

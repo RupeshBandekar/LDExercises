@@ -66,12 +66,12 @@
         }
     }
 
-    public class CashWithdrew : IBaseAccountEvent
+    public class CashWithdrawn : IBaseAccountEvent
     {
         public readonly Guid AccountId;
         public readonly decimal Fund;
 
-        public CashWithdrew(Guid accountId, decimal fund)
+        public CashWithdrawn(Guid accountId, decimal fund)
         {
             AccountId = accountId;
             Fund = fund;
