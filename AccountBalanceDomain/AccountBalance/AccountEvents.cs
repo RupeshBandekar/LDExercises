@@ -104,20 +104,6 @@
         }
     }
 
-    //public class AccountBlockedOverdraftLimitBreach : AccountBlocked
-    //{
-    //    public AccountBlockedOverdraftLimitBreach(Guid accountId) : base(accountId)
-    //    {
-    //    }
-    //}
-
-    //public class AccountBlockedDailyWireTransferLimitBreach : AccountBlocked
-    //{
-    //    public AccountBlockedDailyWireTransferLimitBreach(Guid accountId) : base(accountId)
-    //    {
-    //    }
-    //}
-
     public class AccountUnblocked : IBaseAccountEvent
     {
         public readonly Guid AccountId;
