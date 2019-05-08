@@ -39,13 +39,16 @@ namespace EventStorePractice
 
         private static List<EventData> ProcessEvents(string filePath)
         {
-            var events = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(filePath));
+            var events = JsonConvert.DeserializeObject<dynamic>(File.ReadAllText(filePath));
             var eventData = new List<EventData>();
-            
-            var id = events.SelectToken("eventId").Value<string>();
-            var eventType = events.SelectToken("eventType").Value<string>();
-            eventData.Add(new EventData(Guid.Parse(id), eventType, true,
-                Encoding.UTF8.GetBytes(events.SelectTokens("data").Value<JToken>().ToString()), null));
+
+            foreach (var _event in events)
+            {
+                var id = _event.eventId.ToString();
+                var eventType = _event.eventType.ToString();
+                eventData.Add(new EventData(Guid.Parse(id), eventType, true,
+                    Encoding.UTF8.GetBytes(_event.data.ToString()), null));
+            }
 
             return eventData;
         }
@@ -61,9 +64,32 @@ namespace EventStorePractice
             Console.WriteLine($"Published {firstEventData.Count} events to '{Globals.streamName}'");
         }
 
+        static void ReadFirstEvent()
+        {
+            var conn = CreateConnection();
+            var streamName = Globals.streamName;
+
+            var readEvents = conn.ReadStreamEventsForwardAsync(streamName, 0, 10, true).Result;
+            foreach (var _event in readEvents.Events)
+            {
+                Console.WriteLine(Encoding.UTF8.GetString(_event.Event.Data));
+            }
+
+            //var readResult = conn.ReadEventAsync(streamName, 0, true).Result;
+            //Console.WriteLine(Encoding.UTF8.GetString(readResult.Event.Value.Event.Data));
+        }
+
+        public EventData AddSalesData(int productId, string productName, int quantity, decimal price)
+        {
+            return new EventData(Guid.NewGuid(), "salesdata", true,
+                Encoding.UTF8.GetBytes("{id:" + productId + ",name:" + productName + ",quantity:" + quantity +
+                                       ",price:" + price + "}"), null);
+        }
+
         static void Main(string[] args)
         {
             FirstEvent();
+            ReadFirstEvent();
         }
 
     }
