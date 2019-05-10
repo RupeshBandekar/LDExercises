@@ -32,7 +32,10 @@ namespace EventStoreSaleExercise
             }
             else if (input == "2")
             {
-                
+                InventoryManagerReadModel inventoryManagerReadModel = new InventoryManagerReadModel("Sales");
+                Console.WriteLine("Fetching sales:");
+                Console.WriteLine("ID".PadRight(38, ' ') + "|" + "Name".PadRight(20, ' ') + "|" + "Quantity".PadRight(10, ' ') + "|" + "Price".PadRight(10, ' ') + "|");
+                Console.ReadLine();
             }
             else if (input == "3")
             {
