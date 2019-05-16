@@ -15,31 +15,51 @@ namespace EventStoreSaleExercise
 
         public Sales(string productName, int quantity, decimal price)
         {
+            if (!(ProductName != null && ProductName.Trim() != string.Empty && ProductName.Trim() != ""))
+            {
+                throw new Exception("Invalid product name");
+            }
+            if (Quantity <= 0)
+            {
+                throw new Exception("Invalid quantity");
+            }
+            if (Price <= 0)
+            {
+                throw new Exception("Invalid price");
+            }
+
             Id = Guid.NewGuid();
             ProductName = productName.ToUpper();
             Quantity = quantity;
             Price = price;
         }
 
-        public void AddSale(Sales objSales)
+        public string AddSale()
         {
-            var conn = Globals.CreateConnection();
-            var streamName = "Sales";
-            var eventData = ProcessSalesData(objSales);
-            conn.AppendToStreamAsync(streamName, ExpectedVersion.Any, eventData).Wait();
-            Console.WriteLine($"Sale published on {streamName} stream.");
+            try
+            {
+                var conn = EventStoreSetup.CreateConnection();
+                var streamName = EventStoreSetup.StreamName;
+                var eventData = ProcessSalesData(this);
+                conn.AppendToStreamAsync(streamName, ExpectedVersion.Any, eventData).Wait();
+
+                return "Success";
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
 
         private List<EventData> ProcessSalesData(Sales objSales)
         {
             var events = JsonConvert.SerializeObject(objSales);
             var eventData = new List<EventData>();
-            
-                var id = Guid.NewGuid().ToString();
-                var eventType = Globals.SaleAddedEvent;
-                eventData.Add(new EventData(Guid.Parse(id), eventType, true,
-                    Encoding.UTF8.GetBytes(events), null));
-           
+
+            var id = Guid.NewGuid().ToString();
+            var eventType = EventStoreSetup.SaleAddedEvent;
+            eventData.Add(new EventData(Guid.Parse(id), eventType, true,
+                Encoding.UTF8.GetBytes(events), null));
 
             return eventData;
         }
