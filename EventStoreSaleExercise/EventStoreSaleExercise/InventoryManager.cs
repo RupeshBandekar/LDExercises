@@ -7,24 +7,23 @@
     using Newtonsoft.Json;
     public class InventoryManager : IInventoryManagerReadModel
     {
-        public int? Checkpoint { get; private set; }
+        private int? Checkpoint;
         private string _streamName;
         private Dictionary<string, int> _dictSoldItems;
+
         public InventoryManager(string streamName)
         {
-            int checkpoint = 0;
             _streamName = streamName;
             _dictSoldItems = new Dictionary<string, int>();
-            
-            Checkpoint = checkpoint;
+            Checkpoint = null;
         }
         
-        private void Subscribe()
+        private void Subscribe(string streamName)
         {
-            if (Checkpoint == 0)
-                Checkpoint = null;
+            //if (Checkpoint == 0)
+            //    Checkpoint = null;
 
-            EventStoreSetup.conn.SubscribeToStreamFrom(_streamName, lastCheckpoint: Checkpoint, resolveLinkTos: false, eventAppeared: (s, e) => ReceivedEvent(s, e),
+            EventStoreSetup.conn.SubscribeToStreamFrom(streamName, lastCheckpoint: Checkpoint, resolveLinkTos: false, eventAppeared: (s, e) => ReceivedEvent(s, e),
                 subscriptionDropped: Dropped);
         }
 
@@ -34,8 +33,9 @@
             {
                 if (evt.Event.EventType == EventStoreSetup.SaleAddedEvent)
                 {
-                    var receivedEvent = new List<RecordedEvent> { evt.Event };
-                    PrintProductNameQuantity(GetProductNameQuantityList(receivedEvent));
+                    var receivedEvent = new List<byte[]> { evt.Event.Data };
+                    var dictProductNameQuantity = GetProductNameQuantityList(receivedEvent);
+                    PrintProductNameQuantity(dictProductNameQuantity);
                 }
             }
             catch (Exception ex)
@@ -44,59 +44,17 @@
             }
         }
 
-        //public void ReadAllSaleAddedEvents()
-        //{
-        //    var slice = 10;
-        //    var checkpoint = 0;
-        //    _dictSoldItems = new Dictionary<string, int>();
-
-        //    while (true)
-        //    {
-        //        var eventSlice = conn.ReadStreamEventsForwardAsync(_streamName, checkpoint, slice, true).Result;
-
-        //        foreach (var _event in eventSlice.Events)
-        //        {
-        //            Sales objSales = JsonConvert.DeserializeObject<Sales>(Encoding.UTF8.GetString(_event.Event.Data));
-        //            if (_dictSoldItems.ContainsKey(objSales.ProductName))
-        //            {
-        //                _dictSoldItems[objSales.ProductName] += objSales.Quantity;
-        //            }
-        //            else
-        //            {
-        //                _dictSoldItems.Add(objSales.ProductName, objSales.Quantity);
-        //            }
-
-        //            checkpoint = (int) _event.Event.EventNumber + 1;
-        //        }
-
-        //        if (eventSlice.IsEndOfStream)
-        //            break;
-        //    }
-
-        //    foreach (var item in _dictSoldItems)
-        //    {
-        //        //Console.WriteLine("|" + item.Key.PadRight(20, ' ') + "|" +
-        //        //                  item.Value.ToString().PadRight(10, ' ') + "|");
-        //        Console.WriteLine($"|{item.Key.PadRight(20, ' ')}|{item.Value.ToString().PadRight(10, ' ')}|");
-        //    }
-
-        //    if (checkpoint > 0)
-        //        Checkpoint = checkpoint - 1;
-
-        //    Subscribe();
-        //}
-
-        public List<EventStore.ClientAPI.RecordedEvent> ReadEventsFromStream(IEventStoreConnection conn,
-            string streamName, ref int checkpoint, int slice)
+        public List<byte[]> ReadEventsFromStream(IEventStoreConnection conn,
+            string streamName, int checkpoint, int slice)
         {
-            List<EventStore.ClientAPI.RecordedEvent> recordedEvents = new List<RecordedEvent>();
+            List<byte[]> recordedEvents = new List<byte[]>();
             while (true)
             {
                 var eventSlice = conn.ReadStreamEventsForwardAsync(streamName, checkpoint, slice, true).Result;
 
                 foreach (var _event in eventSlice.Events)
                 {
-                    recordedEvents.Add(_event.Event);
+                    recordedEvents.Add(_event.Event.Data);
                     checkpoint = (int)_event.Event.EventNumber + 1;
                 }
 
@@ -107,9 +65,9 @@
             }
 
             if (checkpoint > 0)
-                checkpoint = checkpoint - 1;
+                Checkpoint = checkpoint - 1;
 
-            Subscribe();
+            Subscribe(streamName);
 
             return recordedEvents;
         }
@@ -117,14 +75,14 @@
         private void Dropped(EventStoreCatchUpSubscription subscription, SubscriptionDropReason reason, Exception ex)
         {
             Console.WriteLine("Subscription dropped, please enter to reconnect.");
-            Subscribe();
+            Subscribe(_streamName);
         }
 
-        public Dictionary<string, int> GetProductNameQuantityList(List<EventStore.ClientAPI.RecordedEvent> recordedEvents)
+        public Dictionary<string, int> GetProductNameQuantityList(List<byte[]> recordedEvents)
         {
-            foreach (var _event in recordedEvents)
+            foreach (var eventData in recordedEvents)
             {
-                Sales objSales = JsonConvert.DeserializeObject<Sales>(Encoding.UTF8.GetString(_event.Data));
+                Sales objSales = JsonConvert.DeserializeObject<Sales>(Encoding.UTF8.GetString(eventData));
                 if (_dictSoldItems.ContainsKey(objSales.ProductName))
                 {
                     _dictSoldItems[objSales.ProductName] += objSales.Quantity;
@@ -138,14 +96,23 @@
             return _dictSoldItems;
         }
         
-        public void PrintProductNameQuantity(Dictionary<string, int> dictProductNameQuantity)
+        public string PrintProductNameQuantity(Dictionary<string, int> dictProductNameQuantity)
         {
-            Console.WriteLine("Fetching current sales info:");
-            Console.WriteLine($"|{ "Name".PadRight(20, ' ')}|{"Quantity".PadRight(10, ' ')}|");
-
-            foreach (var item in dictProductNameQuantity)
+            try
             {
-                Console.WriteLine($"|{item.Key.PadRight(20, ' ')}|{item.Value.ToString().PadRight(10, ' ')}|");
+                Console.WriteLine("Fetching current sales info:");
+                Console.WriteLine($"|{"Name".PadRight(20, ' ')}|{"Quantity".PadRight(10, ' ')}|");
+
+                foreach (var item in dictProductNameQuantity)
+                {
+                    Console.WriteLine($"|{item.Key.PadRight(20, ' ')}|{item.Value.ToString().PadRight(10, ' ')}|");
+                }
+
+                return "Success";
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
             }
         }
     }

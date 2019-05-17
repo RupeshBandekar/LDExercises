@@ -7,29 +7,22 @@
     using System.Collections.Generic;
     public class Director : IDirectorReadModel
     {
-        public int? Checkpoint { get; private set; }
+        private int? Checkpoint;
         private string _streamName;
-        private IEventStoreConnection conn = null;
         private decimal _totalSales;
-
 
         public Director(string streamName)
         {
-            int checkpoint = 0;
-            conn = EventStoreSetup.CreateConnection();
             _streamName = streamName;
-            var recordedEvents  = EventStoreSetup.ReadEventsFromStream(conn, streamName, ref checkpoint, 10);
-            PrintTotalSalesAmount(GetTotalSalesAmount(recordedEvents));
-            Checkpoint = checkpoint;
-            Subscribe();
+            Checkpoint = null;
         }
 
-        private void Subscribe()
+        private void Subscribe(string streamName)
         {
-            if (Checkpoint == 0)
-                Checkpoint = null;
+            //if (Checkpoint == 0)
+            //    Checkpoint = null;
 
-                conn.SubscribeToStreamFrom(_streamName, lastCheckpoint: Checkpoint, resolveLinkTos: false, eventAppeared: (s, e) => ReceivedEvent(s, e),
+            EventStoreSetup.conn.SubscribeToStreamFrom(streamName, lastCheckpoint: Checkpoint, resolveLinkTos: false, eventAppeared: (s, e) => ReceivedEvent(s, e),
                     subscriptionDropped: Dropped);
         }
 
@@ -39,8 +32,9 @@
             {
                 if (evt.Event.EventType == EventStoreSetup.SaleAddedEvent)
                 {
-                    var receivedEvent = new List<RecordedEvent> { evt.Event };
-                    PrintTotalSalesAmount(GetTotalSalesAmount(receivedEvent));
+                    var receivedEvent = new List<byte[]> { evt.Event.Data };
+                    var totalSales = GetTotalSalesAmount(receivedEvent);
+                    PrintTotalSalesAmount(totalSales);
                 }
 
             }
@@ -50,28 +44,65 @@
             }
         }
 
+        public List<byte[]> ReadEventsFromStream(IEventStoreConnection conn,
+            string streamName, int checkpoint, int slice)
+        {
+            List<byte[]> recordedEvents = new List<byte[]>();
+            while (true)
+            {
+                var eventSlice = conn.ReadStreamEventsForwardAsync(streamName, checkpoint, slice, true).Result;
+
+                foreach (var _event in eventSlice.Events)
+                {
+                    recordedEvents.Add(_event.Event.Data);
+                    checkpoint = (int)_event.Event.EventNumber + 1;
+                }
+
+                slice = (int)eventSlice.LastEventNumber;
+
+                if (eventSlice.IsEndOfStream)
+                    break;
+            }
+
+            if (checkpoint > 0)
+                Checkpoint = checkpoint - 1;
+
+            Subscribe(streamName);
+
+            return recordedEvents;
+        }
+
         private void Dropped(EventStoreCatchUpSubscription subscription, SubscriptionDropReason reason, Exception ex)
         {
             Console.WriteLine("Subscription dropped, please enter to reconnect.");
-            Subscribe();
+            Subscribe(_streamName);
         }
 
-        public decimal GetTotalSalesAmount(List<EventStore.ClientAPI.RecordedEvent> recordedEvents)
+        public decimal GetTotalSalesAmount(List<byte[]> recordedEvents)
         {
-            foreach (var _event in recordedEvents)
+            foreach (var eventData in recordedEvents)
             {
-                Sales objSales = JsonConvert.DeserializeObject<Sales>(Encoding.UTF8.GetString(_event.Data));
+                Sales objSales = JsonConvert.DeserializeObject<Sales>(Encoding.UTF8.GetString(eventData));
                 _totalSales += objSales.Price;
             }
 
             return _totalSales;
         }
 
-        public void PrintTotalSalesAmount(decimal totalSalesAmount)
+        public string PrintTotalSalesAmount(decimal totalSalesAmount)
         {
-            Console.WriteLine("Fetching total sales:");
-            Console.WriteLine($"|{"Total sales($)".PadRight(20, ' ')}|");
-            Console.WriteLine($"|{totalSalesAmount.ToString().PadRight(20, ' ')}|");
+            try
+            {
+                Console.WriteLine("Fetching total sales:");
+                Console.WriteLine($"|{"Total sales($)".PadRight(20, ' ')}|");
+                Console.WriteLine($"|{totalSalesAmount.ToString().PadRight(20, ' ')}|");
+
+                return "Success";
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
     }
 }

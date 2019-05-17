@@ -4,11 +4,10 @@
     using System.Collections.Generic;
     public interface IInventoryManagerReadModel
     {
-        Dictionary<string, int> GetProductNameQuantityList(List<EventStore.ClientAPI.RecordedEvent> recordedEvents);
+        List<byte[]> ReadEventsFromStream(IEventStoreConnection conn,
+            string streamName, int checkpoint, int slice);
+        Dictionary<string, int> GetProductNameQuantityList(List<byte[]> recordedEvents);
         
-        void PrintProductNameQuantity(Dictionary<string, int> dictProductNameQuantity);
-
-        List<EventStore.ClientAPI.RecordedEvent> ReadEventsFromStream(IEventStoreConnection conn,
-            string streamName, ref int checkpoint, int slice);
+        string PrintProductNameQuantity(Dictionary<string, int> dictProductNameQuantity);
     }
 }

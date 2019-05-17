@@ -4,11 +4,10 @@
     using System.Collections.Generic;
     public interface IDirectorReadModel
     {
-        decimal GetTotalSalesAmount(List<EventStore.ClientAPI.RecordedEvent> recordedEvents);
+        List<byte[]> ReadEventsFromStream(IEventStoreConnection conn,
+            string streamName, int checkpoint, int slice);
+        decimal GetTotalSalesAmount(List<byte[]> recordedEvents);
 
-        void PrintTotalSalesAmount(decimal totalSalesAmount);
-
-        List<EventStore.ClientAPI.RecordedEvent> ReadEventsFromStream(IEventStoreConnection conn,
-            string streamName, ref int checkpoint, int slice);
+        string PrintTotalSalesAmount(decimal totalSalesAmount);
     }
 }

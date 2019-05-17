@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace EventStoreSaleExercise
 {
-    public class Sales
+    public class Sales : ISalesman
     {
         public readonly Guid Id;
         public readonly string ProductName;
@@ -15,15 +15,15 @@ namespace EventStoreSaleExercise
 
         public Sales(string productName, int quantity, decimal price)
         {
-            if (!(ProductName != null && ProductName.Trim() != string.Empty && ProductName.Trim() != ""))
+            if (!(productName != null && productName.Trim() != string.Empty && productName.Trim() != ""))
             {
                 throw new Exception("Invalid product name");
             }
-            if (Quantity <= 0)
+            if (quantity <= 0)
             {
                 throw new Exception("Invalid quantity");
             }
-            if (Price <= 0)
+            if (price <= 0)
             {
                 throw new Exception("Invalid price");
             }
@@ -34,11 +34,10 @@ namespace EventStoreSaleExercise
             Price = price;
         }
 
-        public string AddSale()
+        public string AddSale(IEventStoreConnection conn)
         {
             try
             {
-                var conn = EventStoreSetup.CreateConnection();
                 var streamName = EventStoreSetup.StreamName;
                 var eventData = ProcessSalesData(this);
                 conn.AppendToStreamAsync(streamName, ExpectedVersion.Any, eventData).Wait();
