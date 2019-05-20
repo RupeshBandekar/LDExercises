@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using EventStore.ClientAPI;
 using Xunit;
 using EventStoreSaleExercise;
+using EventStoreSaleExercise.Tests.Helper;
 using Newtonsoft.Json;
 
 
@@ -14,27 +16,15 @@ namespace EventStoreSaleExercise.Tests
         [Fact]
         public void can_read_product_name_quantity_list()
         {
-            List<Sales> recordedEvents = new List<Sales>
-            {
-                new Sales( "MONITOR", 10, 100),
-                new Sales( "KEYBOARD", 10, 80),
-                new Sales( "MOUSE", 10, 50),
-                new Sales( "MOUSE", 10, 50),
-                new Sales( "MOUSE", 10, 50),
-                new Sales( "MOUSE", 10, 50),
-            };
+            MockDataProvider eventStoreDataProvider = new MockDataProvider();
+            int count = 100;
+            var eventStream = eventStoreDataProvider.ReadStreamEventsForwardAsync("Dummy", 0, ref count, false);
 
-            var streamData = new List<byte[]>();
-            foreach (var eventData in recordedEvents)
-            {
-                var events = JsonConvert.SerializeObject(eventData);
-                streamData.Add(Encoding.UTF8.GetBytes(events));
-            }
+            IInventoryManagerReadModel inventory = new InventoryManager();
+            var dictSoldItems =  inventory.GetProductNameQuantityList(eventStream);
 
-            IInventoryManagerReadModel inventory = new InventoryManager("Dummy");
-            var dictSoldItems =  inventory.GetProductNameQuantityList(streamData);
-
-            Assert.Equal(3, dictSoldItems.Count);
+            Assert.Equal(6, dictSoldItems.Count);
+            Assert.Equal(105, dictSoldItems.Values.Sum());
             //var mockEventStore =new MockIEventStoreConnection();
             //inventory.ReadEventsFromStream(mockEventStore,)
         }
@@ -43,7 +33,11 @@ namespace EventStoreSaleExercise.Tests
         public void can_print_product_name_quantity()
         {
             var dictProductNameQuantity = new Dictionary<string, int>();
-            IInventoryManagerReadModel inventory = new InventoryManager("Dummy");
+            dictProductNameQuantity.Add("MONITOR", 10);
+            dictProductNameQuantity.Add("MOUSE", 10);
+            dictProductNameQuantity.Add("KEYBOARD", 10);
+
+            IInventoryManagerReadModel inventory = new InventoryManager();
             Assert.Equal("Success", inventory.PrintProductNameQuantity(dictProductNameQuantity));
         }
     }

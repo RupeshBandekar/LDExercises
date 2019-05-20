@@ -1,43 +1,47 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Tasks;
+using EventStore.ClientAPI;
+using EventStoreSaleExercise.Tests.Helper;
 using Newtonsoft.Json;
 
 namespace EventStoreSaleExercise.Tests
 {
     using Xunit;
+
     public class DirectorReadModelTests
     {
         [Fact]
-        public void can_read_total_sales_amount()
+        public void can_get_total_sales_amount()
         {
-            List<Sales> recordedEvents = new List<Sales>
-            {
-                new Sales( "MONITOR", 10, 100),
-                new Sales( "KEYBOARD", 10, 80),
-                new Sales( "MOUSE", 10, 50),
-                new Sales( "MOUSE", 10, 50),
-                new Sales( "MOUSE", 10, 50),
-            };
+            MockDataProvider eventStoreDataProvider = new MockDataProvider();
+            int count = 100;
+            var eventStream = eventStoreDataProvider.ReadStreamEventsForwardAsync("Dummy", 0, ref count, false);
 
-            var streamData = new List<byte[]>();
-            foreach (var eventData in recordedEvents)
-            {
-                var events = JsonConvert.SerializeObject(eventData);
-                streamData.Add(Encoding.UTF8.GetBytes(events));
-            }
+            Director director = new Director();
+            var totalSalesAmount = director.GetTotalSalesAmount(eventStream);
 
-            IDirectorReadModel director = new Director("Dummy");
-            var totalSalesAmount = director.GetTotalSalesAmount(streamData);
-
-            Assert.Equal(330, totalSalesAmount);
+            Assert.Equal(4760, totalSalesAmount);
         }
 
         [Fact]
         public void can_print_total_sales_amount()
         {
-            var totalSalesAmount = 0;
-            IDirectorReadModel director = new Director("Dummy");
+            var totalSalesAmount = 1000;
+            Director director = new Director();
             Assert.Equal("Success", director.PrintTotalSalesAmount(totalSalesAmount));
+        }
+
+        [Fact]
+        public void can_execute_callback_method()
+        {
+            EventStoreCatchUpSubscription _fakeSubscription = null;
+            ResolvedEvent rEvent = new ResolvedEvent();
+
+            Director director = new Director();
+            Assert.Equal(Task.CompletedTask, director.ReceivedEvent(_fakeSubscription, rEvent));
         }
     }
 }

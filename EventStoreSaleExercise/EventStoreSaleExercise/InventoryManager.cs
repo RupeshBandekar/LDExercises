@@ -1,4 +1,6 @@
-﻿namespace EventStoreSaleExercise
+﻿using System.Threading.Tasks;
+
+namespace EventStoreSaleExercise
 {
     using System;
     using System.Collections.Generic;
@@ -7,27 +9,14 @@
     using Newtonsoft.Json;
     public class InventoryManager : IInventoryManagerReadModel
     {
-        private int? Checkpoint;
-        private string _streamName;
         private Dictionary<string, int> _dictSoldItems;
 
-        public InventoryManager(string streamName)
+        public InventoryManager()
         {
-            _streamName = streamName;
             _dictSoldItems = new Dictionary<string, int>();
-            Checkpoint = null;
-        }
-        
-        private void Subscribe(string streamName)
-        {
-            //if (Checkpoint == 0)
-            //    Checkpoint = null;
-
-            EventStoreSetup.conn.SubscribeToStreamFrom(streamName, lastCheckpoint: Checkpoint, resolveLinkTos: false, eventAppeared: (s, e) => ReceivedEvent(s, e),
-                subscriptionDropped: Dropped);
         }
 
-        private void ReceivedEvent(EventStoreCatchUpSubscription subscription, ResolvedEvent evt)
+        public Task ReceivedEvent(EventStoreCatchUpSubscription subscription, ResolvedEvent evt)
         {
             try
             {
@@ -35,47 +24,15 @@
                 {
                     var receivedEvent = new List<byte[]> { evt.Event.Data };
                     var dictProductNameQuantity = GetProductNameQuantityList(receivedEvent);
-                    PrintProductNameQuantity(dictProductNameQuantity);
+                    var printStatus = PrintProductNameQuantity(dictProductNameQuantity);
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Event exception: " + ex.Message);
             }
-        }
 
-        public List<byte[]> ReadEventsFromStream(IEventStoreConnection conn,
-            string streamName, int checkpoint, int slice)
-        {
-            List<byte[]> recordedEvents = new List<byte[]>();
-            while (true)
-            {
-                var eventSlice = conn.ReadStreamEventsForwardAsync(streamName, checkpoint, slice, true).Result;
-
-                foreach (var _event in eventSlice.Events)
-                {
-                    recordedEvents.Add(_event.Event.Data);
-                    checkpoint = (int)_event.Event.EventNumber + 1;
-                }
-
-                slice = (int)eventSlice.LastEventNumber;
-
-                if (eventSlice.IsEndOfStream)
-                    break;
-            }
-
-            if (checkpoint > 0)
-                Checkpoint = checkpoint - 1;
-
-            Subscribe(streamName);
-
-            return recordedEvents;
-        }
-
-        private void Dropped(EventStoreCatchUpSubscription subscription, SubscriptionDropReason reason, Exception ex)
-        {
-            Console.WriteLine("Subscription dropped, please enter to reconnect.");
-            Subscribe(_streamName);
+            return Task.CompletedTask;
         }
 
         public Dictionary<string, int> GetProductNameQuantityList(List<byte[]> recordedEvents)
@@ -95,25 +52,18 @@
 
             return _dictSoldItems;
         }
-        
+
         public string PrintProductNameQuantity(Dictionary<string, int> dictProductNameQuantity)
         {
-            try
-            {
-                Console.WriteLine("Fetching current sales info:");
-                Console.WriteLine($"|{"Name".PadRight(20, ' ')}|{"Quantity".PadRight(10, ' ')}|");
+            Console.WriteLine("Fetching current sales info:");
+            Console.WriteLine($"|{"Name".PadRight(20, ' ')}|{"Quantity".PadRight(10, ' ')}|");
 
-                foreach (var item in dictProductNameQuantity)
-                {
-                    Console.WriteLine($"|{item.Key.PadRight(20, ' ')}|{item.Value.ToString().PadRight(10, ' ')}|");
-                }
-
-                return "Success";
-            }
-            catch (Exception ex)
+            foreach (var item in dictProductNameQuantity)
             {
-                return ex.Message;
+                Console.WriteLine($"|{item.Key.PadRight(20, ' ')}|{item.Value.ToString().PadRight(10, ' ')}|");
             }
+
+            return "Success";
         }
     }
 }
