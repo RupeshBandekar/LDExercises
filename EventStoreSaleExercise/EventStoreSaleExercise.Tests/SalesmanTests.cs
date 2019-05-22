@@ -8,14 +8,14 @@ namespace EventStoreSaleExercise.Tests
 {
     public class SalesmanTests
     {
-        [Fact]
-        public void can_save_achieved_sales()
-        {
-            var conn = EventStoreSetup.CreateConnection();
+        //[Fact]
+        //public void can_save_achieved_sales()
+        //{
+        //    var conn = EventStoreSetup.CreateConnection();
 
-            Sales objSales = new Sales("monitor", 1, 150);
-            Assert.Equal("Success", objSales.AddSale(conn));
-        }
+        //    Sales objSales = new Sales("monitor", 1, 150);
+        //    Assert.Equal("Success", objSales.AddSale(conn));
+        //}
 
         [Theory]
         [InlineData("")]

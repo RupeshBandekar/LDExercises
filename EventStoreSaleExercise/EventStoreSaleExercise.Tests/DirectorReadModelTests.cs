@@ -20,7 +20,7 @@ namespace EventStoreSaleExercise.Tests
             int count = 100;
             var eventStream = eventStoreDataProvider.ReadStreamEventsForwardAsync("Dummy", 0, ref count, false);
 
-            Director director = new Director();
+            DirectorRM director = new DirectorRM();
             var totalSalesAmount = director.GetTotalSalesAmount(eventStream);
 
             Assert.Equal(4760, totalSalesAmount);
@@ -30,18 +30,8 @@ namespace EventStoreSaleExercise.Tests
         public void can_print_total_sales_amount()
         {
             var totalSalesAmount = 1000;
-            Director director = new Director();
+            DirectorRM director = new DirectorRM();
             Assert.Equal("Success", director.PrintTotalSalesAmount(totalSalesAmount));
-        }
-
-        [Fact]
-        public void can_execute_callback_method()
-        {
-            EventStoreCatchUpSubscription _fakeSubscription = null;
-            ResolvedEvent rEvent = new ResolvedEvent();
-
-            Director director = new Director();
-            Assert.Equal(Task.CompletedTask, director.ReceivedEvent(_fakeSubscription, rEvent));
         }
     }
 }

@@ -7,11 +7,11 @@ namespace EventStoreSaleExercise
     using System.Text;
     using EventStore.ClientAPI;
     using Newtonsoft.Json;
-    public class InventoryManager : IInventoryManagerReadModel
+    public class InventoryManagerRM : IInventoryManagerReadModel
     {
         private Dictionary<string, int> _dictSoldItems;
 
-        public InventoryManager()
+        public InventoryManagerRM()
         {
             _dictSoldItems = new Dictionary<string, int>();
         }

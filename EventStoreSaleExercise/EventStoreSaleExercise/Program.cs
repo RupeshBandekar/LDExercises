@@ -3,43 +3,67 @@ using System.Configuration;
 
 namespace EventStoreSaleExercise
 {
-    class Program
+    public class Program
     {
         public static void Main(string[] args)
         {
-            EventStoreSetup.CreateConnection();
-            Viewer view = new Viewer();
-
-            Console.WriteLine("1 - Salesman");
-            Console.WriteLine("2 - Inventory Manager");
-            Console.WriteLine("3 - Director");
+            Viewer.ConsoleWrite("1 - Salesman");
+            Viewer.ConsoleWrite("2 - Inventory Manager");
+            Viewer.ConsoleWrite("3 - Director");
             var input = Console.ReadLine();
+            IViewer view = new Viewer();
+            PerformAction(input, view);
+        }
 
+        public static string PerformAction(string input, IViewer view)
+        {
+            EventStoreSetup.CreateConnection();
+            
+            var welcomeMsg = "";
             if (input == "1")
             {
-                Console.WriteLine("You have entered as a Salesman");
+                welcomeMsg = "You have entered as a Salesman";
+                Viewer.ConsoleWrite(welcomeMsg);
 
-                while (true)
+                try
                 {
-                    view.Salesman();
+                    if (view.GetType() == typeof(Viewer))
+                    {
+                        ISalesman sales = new Sales("Dummy", 1, 1);
+                        view = new Viewer(sales);
+                        ((Viewer)view).PerformAction();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Viewer.ConsoleWrite(ex.Message);
                 }
             }
             else if (input == "2")
             {
-                Console.WriteLine("You have entered as a Inventory Manager");
-                
-                view.InventoryManager();
-
-                Console.ReadLine();
+                welcomeMsg = "You have entered as a Inventory Manager";
+                Viewer.ConsoleWrite(welcomeMsg);
+                if (view.GetType() == typeof(Viewer))
+                {
+                    IInventoryManagerReadModel inventory = new InventoryManagerRM();
+                    view = new Viewer(inventory);
+                    ((Viewer)view).PerformAction();
+                }
             }
             else if (input == "3")
             {
-                Console.WriteLine("You have entered as a Director");
-                
-                view.Director();
+                welcomeMsg = "You have entered as a Director";
+                Viewer.ConsoleWrite(welcomeMsg);
 
-                Console.ReadLine();
+                if (view.GetType() == typeof(Viewer))
+                {
+                    IDirectorReadModel director = new DirectorRM();
+                    view = new Viewer(director);
+                    ((Viewer)view).PerformAction();
+                }
             }
+
+            return welcomeMsg;
         }
     }
 }

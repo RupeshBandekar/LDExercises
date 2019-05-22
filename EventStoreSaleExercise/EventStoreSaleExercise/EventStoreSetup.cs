@@ -10,8 +10,8 @@ namespace EventStoreSaleExercise
         public static readonly UserCredentials AdminCredentials = new UserCredentials("admin", "changeit");
         public const string StreamName = "Sales";
         public const string SaleAddedEvent = "SaleAdded";
-        public const string InventoryManagerGroup = "InventoryManagerGroup";
-        public const string DirectorGroup = "DirectorGroup";
+        //public const string InventoryManagerGroup = "InventoryManagerGroup";
+        //public const string DirectorGroup = "DirectorGroup";
         public static IEventStoreConnection conn;
 
         public static IEventStoreConnection CreateConnection()

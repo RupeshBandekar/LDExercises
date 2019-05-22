@@ -8,11 +8,11 @@ namespace EventStoreSaleExercise
     using EventStore.ClientAPI;
     using Newtonsoft.Json;
     using System.Collections.Generic;
-    public class Director : IDirectorReadModel
+    public class DirectorRM : IDirectorReadModel
     {
         private decimal _totalSales;
 
-        public Director()
+        public DirectorRM()
         {
         }
         

@@ -6,60 +6,113 @@ using System.Threading.Tasks;
 
 namespace EventStoreSaleExercise
 {
-    public class Viewer
+    public class Viewer : IViewer
     {
-        public void Salesman()
+        private IViewer _viewer;
+
+        public Viewer()
+        { }
+
+        public Viewer(IViewer viewer)
+        {
+            if (viewer.GetType() == typeof(Sales))
+            {
+                _viewer = ((ISalesman)viewer);
+            }
+
+            if (viewer.GetType() == typeof(InventoryManagerRM))
+            {
+                _viewer = ((IInventoryManagerReadModel)viewer);
+            }
+
+            if (viewer.GetType() == typeof(DirectorRM))
+            {
+                _viewer = ((IDirectorReadModel)viewer);
+            }
+        }
+
+        public static string ConsoleWrite(string message)
+        {
+            Console.WriteLine(message);
+            return "success";
+        }
+
+        public void PerformAction()
+        {
+            if (_viewer.GetType() == typeof(Sales))
+            {
+                Salesman((ISalesman)_viewer);
+            }
+
+            if (_viewer.GetType() == typeof(InventoryManagerRM))
+            {
+                InventoryManager((IInventoryManagerReadModel)_viewer);
+                Console.ReadLine();
+            }
+
+            if (_viewer.GetType() == typeof(DirectorRM))
+            {
+                Director((IDirectorReadModel)_viewer);
+                Console.ReadLine();
+            }
+        }
+        private void Salesman(ISalesman objSales)
         {
             while (true)
             {
-                Console.WriteLine("Please enter your sales details");
-                Console.WriteLine("Product Name:");
+                Viewer.ConsoleWrite("Please enter your sales details");
+                Viewer.ConsoleWrite("Product Name:");
                 var productName = Console.ReadLine();
-                Console.WriteLine("Quantity:");
+                Viewer.ConsoleWrite("Quantity:");
                 var quantity = Console.ReadLine();
-                Console.WriteLine("Price:");
+                Viewer.ConsoleWrite("Price:");
                 var price = Console.ReadLine();
 
                 try
                 {
-                    ISalesman objSales = new Sales(productName, Convert.ToInt32(quantity), Convert.ToDecimal(price));
+                    objSales = new Sales(productName, Convert.ToInt32(quantity), Convert.ToDecimal(price));
                     if (objSales.AddSale(EventStoreSetup.conn) == "Success")
                     {
-                        Console.WriteLine($"Sale published on {EventStoreSetup.StreamName} stream.");
+                        ConsoleWrite($"Sale published on {EventStoreSetup.StreamName} stream.");
+                        ConsoleWrite("Do you want to add another sale? Y/N:");
+                        var action = Console.ReadLine();
+                        if (action != null && action.ToUpper() == "Y")
+                            continue;
+                        else break;
                     }
                     else
                     {
-                        Console.WriteLine($"Error occured while publishing data to stream");
+                        ConsoleWrite($"Error occured while publishing data to stream");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    ConsoleWrite(ex.Message);
                 }
             }
         }
 
-        public void InventoryManager()
+        private void InventoryManager(IInventoryManagerReadModel inventory)
         {
             var eventStoreDataProvider = new EventStoreDataProvider(EventStoreSetup.conn);
             var count = 10;
             var receivedEvents =
                 eventStoreDataProvider.ReadStreamEventsForwardAsync(EventStoreSetup.StreamName, 0, ref count,
                     false);
-            var inventoryManager = new InventoryManager();
+            inventory = new InventoryManagerRM();
             var eventReader = new EventReader(EventStoreSetup.StreamName,
-                (s, e) => inventoryManager.ReceivedEvent(s, e));
+                (s, e) => inventory.ReceivedEvent(s, e));
             eventReader.SubscribeEventStream(count);
-            var dictProductNameQuantity = inventoryManager.GetProductNameQuantityList(receivedEvents);
-            var printStatus = inventoryManager.PrintProductNameQuantity(dictProductNameQuantity);
+            var dictProductNameQuantity = inventory.GetProductNameQuantityList(receivedEvents);
+            var printStatus = inventory.PrintProductNameQuantity(dictProductNameQuantity);
         }
 
-        public void Director()
+        private void Director(IDirectorReadModel director)
         {
             var eventStoreDataProvider = new EventStoreDataProvider(EventStoreSetup.conn);
             var count = 10;
             var receivedEvents = eventStoreDataProvider.ReadStreamEventsForwardAsync(EventStoreSetup.StreamName, 0, ref count, false);
-            var director = new Director();
+            director = new DirectorRM();
             var eventReader = new EventReader(EventStoreSetup.StreamName, (s, e) => director.ReceivedEvent(s, e));
             eventReader.SubscribeEventStream(count);
             var totalSales = director.GetTotalSalesAmount(receivedEvents);

@@ -20,11 +20,17 @@ namespace EventStoreSaleExercise.Tests
             int count = 100;
             var eventStream = eventStoreDataProvider.ReadStreamEventsForwardAsync("Dummy", 0, ref count, false);
 
-            IInventoryManagerReadModel inventory = new InventoryManager();
+            IInventoryManagerReadModel inventory = new InventoryManagerRM();
             var dictSoldItems =  inventory.GetProductNameQuantityList(eventStream);
 
             Assert.Equal(6, dictSoldItems.Count);
             Assert.Equal(105, dictSoldItems.Values.Sum());
+            Assert.Equal(25, dictSoldItems["MONITOR"]);
+            Assert.Equal(20, dictSoldItems["KEYBOARD"]);
+            Assert.Equal(10, dictSoldItems["MOUSE"]);
+            Assert.Equal(20, dictSoldItems["NOTEPAD"]);
+            Assert.Equal(20, dictSoldItems["PEN"]);
+            Assert.Equal(10, dictSoldItems["PENCIL"]);
             //var mockEventStore =new MockIEventStoreConnection();
             //inventory.ReadEventsFromStream(mockEventStore,)
         }
@@ -37,7 +43,7 @@ namespace EventStoreSaleExercise.Tests
             dictProductNameQuantity.Add("MOUSE", 10);
             dictProductNameQuantity.Add("KEYBOARD", 10);
 
-            IInventoryManagerReadModel inventory = new InventoryManager();
+            IInventoryManagerReadModel inventory = new InventoryManagerRM();
             Assert.Equal("Success", inventory.PrintProductNameQuantity(dictProductNameQuantity));
         }
     }
