@@ -1,12 +1,11 @@
-﻿using System.Threading.Tasks;
-
-namespace EventStoreSaleExercise
+﻿namespace EventStoreSaleExercise
 {
     using System;
     using System.Collections.Generic;
     using System.Text;
     using EventStore.ClientAPI;
     using Newtonsoft.Json;
+    using System.Threading.Tasks;
     public class InventoryManagerRM : IInventoryManagerReadModel
     {
         private Dictionary<string, int> _dictSoldItems;
@@ -22,31 +21,30 @@ namespace EventStoreSaleExercise
             {
                 if (evt.Event.EventType == EventStoreSetup.SaleAddedEvent)
                 {
-                    var receivedEvent = new List<byte[]> { evt.Event.Data };
+                    var receivedEvent = new List<Sales> { JsonConvert.DeserializeObject<Sales>(Encoding.UTF8.GetString(evt.Event.Data)) };
                     var dictProductNameQuantity = GetProductNameQuantityList(receivedEvent);
                     var printStatus = PrintProductNameQuantity(dictProductNameQuantity);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Event exception: " + ex.Message);
+                Viewer.ConsoleWrite("Event exception: " + ex.Message);
             }
 
             return Task.CompletedTask;
         }
 
-        public Dictionary<string, int> GetProductNameQuantityList(List<byte[]> recordedEvents)
+        public Dictionary<string, int> GetProductNameQuantityList(List<Sales> recordedEvents)
         {
             foreach (var eventData in recordedEvents)
             {
-                Sales objSales = JsonConvert.DeserializeObject<Sales>(Encoding.UTF8.GetString(eventData));
-                if (_dictSoldItems.ContainsKey(objSales.ProductName))
+                if (_dictSoldItems.ContainsKey(eventData.ProductName))
                 {
-                    _dictSoldItems[objSales.ProductName] += objSales.Quantity;
+                    _dictSoldItems[eventData.ProductName] += eventData.Quantity;
                 }
                 else
                 {
-                    _dictSoldItems.Add(objSales.ProductName, objSales.Quantity);
+                    _dictSoldItems.Add(eventData.ProductName, eventData.Quantity);
                 }
             }
 
@@ -55,12 +53,12 @@ namespace EventStoreSaleExercise
 
         public string PrintProductNameQuantity(Dictionary<string, int> dictProductNameQuantity)
         {
-            Console.WriteLine("Fetching current sales info:");
-            Console.WriteLine($"|{"Name".PadRight(20, ' ')}|{"Quantity".PadRight(10, ' ')}|");
+            Viewer.ConsoleWrite("Fetching current sales info:");
+            Viewer.ConsoleWrite($"|{"Name".PadRight(20, ' ')}|{"Quantity".PadRight(10, ' ')}|");
 
             foreach (var item in dictProductNameQuantity)
             {
-                Console.WriteLine($"|{item.Key.PadRight(20, ' ')}|{item.Value.ToString().PadRight(10, ' ')}|");
+                Viewer.ConsoleWrite($"|{item.Key.PadRight(20, ' ')}|{item.Value.ToString().PadRight(10, ' ')}|");
             }
 
             return "Success";

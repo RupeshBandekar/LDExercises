@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionService.cs" />
     <Compile Include="DirectorRM.cs" />
     <Compile Include="EventReader.cs" />
     <Compile Include="EventStoreDataProvider.cs" />

@@ -31,8 +31,6 @@ namespace EventStoreSaleExercise.Tests
             Assert.Equal(20, dictSoldItems["NOTEPAD"]);
             Assert.Equal(20, dictSoldItems["PEN"]);
             Assert.Equal(10, dictSoldItems["PENCIL"]);
-            //var mockEventStore =new MockIEventStoreConnection();
-            //inventory.ReadEventsFromStream(mockEventStore,)
         }
 
         [Fact]

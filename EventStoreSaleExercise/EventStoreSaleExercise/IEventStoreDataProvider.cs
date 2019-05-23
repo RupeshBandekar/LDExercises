@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-
-namespace EventStoreSaleExercise
+﻿namespace EventStoreSaleExercise
 {
-    using EventStore.ClientAPI;
+    using System.Collections.Generic;
     public interface IEventStoreDataProvider
     {
-        List<byte[]> ReadStreamEventsForwardAsync(string streamName, long start, ref int count, bool resolveLinkTos);
+        List<Sales> ReadStreamEventsForwardAsync(string streamName, long start, ref int count, bool resolveLinkTos);
     }
 }

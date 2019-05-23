@@ -6,7 +6,7 @@ namespace EventStoreSaleExercise
     using System.Collections.Generic;
     public interface IDirectorReadModel : IViewer
     {
-        decimal GetTotalSalesAmount(List<byte[]> recordedEvents);
+        decimal GetTotalSalesAmount(List<Sales> recordedEvents);
 
         string PrintTotalSalesAmount(decimal totalSalesAmount);
 

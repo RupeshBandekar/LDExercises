@@ -7,7 +7,7 @@ namespace EventStoreSaleExercise.Tests.Helper
 {
     public class MockDataProvider : IEventStoreDataProvider
     {
-        public List<byte[]> ReadStreamEventsForwardAsync(string streamName, long start, ref int count, bool resolveLinkTos)
+        public List<Sales> ReadStreamEventsForwardAsync(string streamName, long start, ref int count, bool resolveLinkTos)
         {
             List<byte[]> eventStream = new List<byte[]>();
 
@@ -24,14 +24,8 @@ namespace EventStoreSaleExercise.Tests.Helper
                 new Sales( "pen", 10, 2),
                 new Sales( "pencil", 10, 2),
             };
-            
-            foreach (var eventData in recordedEvents)
-            {
-                var events = JsonConvert.SerializeObject(eventData);
-                eventStream.Add(Encoding.UTF8.GetBytes(events));
-            }
 
-            return eventStream;
+            return recordedEvents;
         }
     }
 }

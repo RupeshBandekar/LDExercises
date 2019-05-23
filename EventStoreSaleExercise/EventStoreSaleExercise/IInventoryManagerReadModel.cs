@@ -1,12 +1,11 @@
-﻿using System.Threading.Tasks;
-
-namespace EventStoreSaleExercise
+﻿namespace EventStoreSaleExercise
 {
     using EventStore.ClientAPI;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     public interface IInventoryManagerReadModel : IViewer
     {
-        Dictionary<string, int> GetProductNameQuantityList(List<byte[]> recordedEvents);
+        Dictionary<string, int> GetProductNameQuantityList(List<Sales> recordedEvents);
         
         string PrintProductNameQuantity(Dictionary<string, int> dictProductNameQuantity);
 
