@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EventStoreSaleExercise
+﻿namespace EventStoreSaleExercise
 {
+    using System;
+
     public class ActionService
     {
         public static string PerformAction(string input, IViewer view)

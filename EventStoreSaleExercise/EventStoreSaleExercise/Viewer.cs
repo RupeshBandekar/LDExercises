@@ -21,7 +21,7 @@
         public static string ConsoleWrite(string message)
         {
             Console.WriteLine(message);
-            return "success";
+            return message;
         }
     }
 }

@@ -5,6 +5,7 @@
     using System.Text;
     using EventStore.ClientAPI;
     using Newtonsoft.Json;
+
     public class Sales : ISalesman
     {
         public readonly Guid Id;

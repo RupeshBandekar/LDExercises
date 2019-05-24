@@ -1,30 +1,48 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using EventStore.ClientAPI;
-using Xunit;
-using EventStoreSaleExercise;
-using EventStoreSaleExercise.Tests.Helper;
-using Newtonsoft.Json;
-
-
 namespace EventStoreSaleExercise.Tests
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using Xunit;
+    using Helper;
+
     public class InventoryManagerTests
     {
         [Fact]
-        public void can_read_product_name_quantity_list()
+        public void can_get_distinct_product_name_quantity_list()
         {
-            MockDataProvider eventStoreDataProvider = new MockDataProvider();
-            int count = 100;
+            var eventStoreDataProvider = new MockDataProvider();
+            var count = 100;
             var eventStream = eventStoreDataProvider.ReadStreamEventsForwardAsync("Dummy", 0, ref count, false);
 
             IInventoryManagerReadModel inventory = new InventoryManagerRM();
             var dictSoldItems =  inventory.GetProductNameQuantityList(eventStream);
 
             Assert.Equal(6, dictSoldItems.Count);
+        }
+
+        [Fact]
+        public void can_get_cumulative_quantity_of_duplicate_products()
+        {
+            var eventStoreDataProvider = new MockDataProvider();
+            var count = 100;
+            var eventStream = eventStoreDataProvider.ReadStreamEventsForwardAsync("Dummy", 0, ref count, false);
+
+            IInventoryManagerReadModel inventory = new InventoryManagerRM();
+            var dictSoldItems = inventory.GetProductNameQuantityList(eventStream);
+
             Assert.Equal(105, dictSoldItems.Values.Sum());
+        }
+
+        [Fact]
+        public void can_get_product_wise_quantities_from_duplicate_products()
+        {
+            var eventStoreDataProvider = new MockDataProvider();
+            var count = 100;
+            var eventStream = eventStoreDataProvider.ReadStreamEventsForwardAsync("Dummy", 0, ref count, false);
+
+            IInventoryManagerReadModel inventory = new InventoryManagerRM();
+            var dictSoldItems = inventory.GetProductNameQuantityList(eventStream);
+
             Assert.Equal(25, dictSoldItems["MONITOR"]);
             Assert.Equal(20, dictSoldItems["KEYBOARD"]);
             Assert.Equal(10, dictSoldItems["MOUSE"]);
@@ -34,15 +52,40 @@ namespace EventStoreSaleExercise.Tests
         }
 
         [Fact]
+        public void can_read_empty_product_name_quantity_list()
+        {
+            var eventStoreDataProvider = new MockEmptyDataProvider();
+            var count = 100;
+            var eventStream = eventStoreDataProvider.ReadStreamEventsForwardAsync("Dummy", 0, ref count, false);
+
+            IInventoryManagerReadModel inventory = new InventoryManagerRM();
+            var dictSoldItems = inventory.GetProductNameQuantityList(eventStream);
+
+            Assert.Empty(dictSoldItems);
+            Assert.Equal(0, dictSoldItems.Values.Sum());
+        }
+
+        [Fact]
         public void can_print_product_name_quantity()
         {
-            var dictProductNameQuantity = new Dictionary<string, int>();
-            dictProductNameQuantity.Add("MONITOR", 10);
-            dictProductNameQuantity.Add("MOUSE", 10);
-            dictProductNameQuantity.Add("KEYBOARD", 10);
+            var dictProductNameQuantity = new Dictionary<string, int>
+            {
+                { "MONITOR", 10 },
+                { "MOUSE", 10 },
+                { "KEYBOARD", 10 }
+            };
 
             IInventoryManagerReadModel inventory = new InventoryManagerRM();
             Assert.Equal("Success", inventory.PrintProductNameQuantity(dictProductNameQuantity));
+        }
+
+        [Fact]
+        public void can_print_no_sale_found_message()
+        {
+            var dictProductNameQuantity = new Dictionary<string, int>();
+
+            IInventoryManagerReadModel inventory = new InventoryManagerRM();
+            Assert.Equal("No sales found", inventory.PrintProductNameQuantity(dictProductNameQuantity));
         }
     }
 }

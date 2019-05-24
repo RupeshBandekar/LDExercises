@@ -29,10 +29,10 @@
         }
 
         [Fact]
-        public void can_write_on_console()
+        public void can_return_same_message_written_on_console()
         {
             var retMessage = Viewer.ConsoleWrite("test message");
-            Assert.Equal("success", retMessage);
+            Assert.Equal("test message", retMessage);
         }
     }
 }

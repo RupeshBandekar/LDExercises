@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using EventStore.ClientAPI;
-using Xunit;
-
-namespace EventStoreSaleExercise.Tests
+﻿namespace EventStoreSaleExercise.Tests
 {
+    using System;
+    using Xunit;
+
     public class SalesmanTests
     {
         [Theory]

@@ -6,6 +6,7 @@
     using EventStore.ClientAPI;
     using Newtonsoft.Json;
     using System.Threading.Tasks;
+
     public class InventoryManagerRM : IInventoryManagerReadModel
     {
         private Dictionary<string, int> _dictSoldItems;
@@ -21,7 +22,8 @@
             {
                 if (evt.Event.EventType == EventStoreSetup.SaleAddedEvent)
                 {
-                    var receivedEvent = new List<Sales> { JsonConvert.DeserializeObject<Sales>(Encoding.UTF8.GetString(evt.Event.Data)) };
+                    var receivedEvent = new List<Sales>
+                        {JsonConvert.DeserializeObject<Sales>(Encoding.UTF8.GetString(evt.Event.Data))};
                     var dictProductNameQuantity = GetProductNameQuantityList(receivedEvent);
                     var printStatus = PrintProductNameQuantity(dictProductNameQuantity);
                 }
@@ -54,6 +56,12 @@
         public string PrintProductNameQuantity(Dictionary<string, int> dictProductNameQuantity)
         {
             Viewer.ConsoleWrite("Fetching current sales info:");
+
+            if (dictProductNameQuantity.Count == 0)
+            {
+                return Viewer.ConsoleWrite("No sales found");
+            }
+
             Viewer.ConsoleWrite($"|{"Name".PadRight(20, ' ')}|{"Quantity".PadRight(10, ' ')}|");
 
             foreach (var item in dictProductNameQuantity)
@@ -62,6 +70,7 @@
             }
 
             return "Success";
+
         }
     }
 }
