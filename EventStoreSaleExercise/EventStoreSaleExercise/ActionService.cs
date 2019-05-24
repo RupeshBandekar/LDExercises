@@ -1,4 +1,6 @@
-﻿namespace EventStoreSaleExercise
+﻿using System.Collections.Generic;
+
+namespace EventStoreSaleExercise
 {
     using System;
 
@@ -35,8 +37,7 @@
                             {
                                 ISalesman sales = new Sales(productName, Convert.ToInt32(quantity),
                                     Convert.ToDecimal(price));
-                                view = new Viewer(sales);
-                                ((Viewer) view).PerformAction();
+                                PerformActionByRole(sales);
                             }
                             catch (Exception ex)
                             {
@@ -63,8 +64,7 @@
                 if (view.GetType() == typeof(Viewer))
                 {
                     IInventoryManagerReadModel inventory = new InventoryManagerRM();
-                    view = new Viewer(inventory);
-                    ((Viewer) view).PerformAction();
+                    PerformActionByRole(inventory);
                 }
             }
             else if (input == "3")
@@ -75,15 +75,14 @@
                 if (view.GetType() == typeof(Viewer))
                 {
                     IDirectorReadModel director = new DirectorRM();
-                    view = new Viewer(director);
-                    ((Viewer) view).PerformAction();
+                    PerformActionByRole(director);
                 }
             }
 
             return welcomeMsg;
         }
 
-        public void PerformActionByRole(IViewer viewer)
+        private static void PerformActionByRole(IViewer viewer)
         {
             if (viewer.GetType() == typeof(Sales))
             {
@@ -103,7 +102,7 @@
             }
         }
 
-        private void Salesman(ISalesman objSales)
+        private static void Salesman(ISalesman objSales)
         {
             try
             {
@@ -120,15 +119,12 @@
             }
         }
 
-        private void InventoryManager(IInventoryManagerReadModel inventory)
+        private static void InventoryManager(IInventoryManagerReadModel inventory)
         {
             try
             {
-                var eventStoreDataProvider = new EventStoreDataProvider(EventStoreSetup.conn);
                 var count = 10;
-                var receivedEvents =
-                    eventStoreDataProvider.ReadStreamEventsForwardAsync(EventStoreSetup.StreamName, 0, ref count,
-                        false);
+                var receivedEvents = GetReceivedEvents(ref count);
                 var eventReader = new EventReader(EventStoreSetup.StreamName,
                     (s, e) => inventory.ReceivedEvent(s, e));
                 eventReader.SubscribeEventStream(count);
@@ -141,15 +137,12 @@
             }
         }
 
-        private void Director(IDirectorReadModel director)
+        private static void Director(IDirectorReadModel director)
         {
             try
             {
-                var eventStoreDataProvider = new EventStoreDataProvider(EventStoreSetup.conn);
                 var count = 10;
-                var receivedEvents =
-                    eventStoreDataProvider.ReadStreamEventsForwardAsync(EventStoreSetup.StreamName, 0, ref count,
-                        false);
+                var receivedEvents = GetReceivedEvents(ref count);
                 var eventReader = new EventReader(EventStoreSetup.StreamName, (s, e) => director.ReceivedEvent(s, e));
                 eventReader.SubscribeEventStream(count);
                 var totalSales = director.GetTotalSalesAmount(receivedEvents);
@@ -159,6 +152,16 @@
             {
                 Viewer.ConsoleWrite(ex.Message);
             }
+        }
+
+        private static List<Sales> GetReceivedEvents(ref int count)
+        {
+            var eventStoreDataProvider = new EventStoreDataProvider(EventStoreSetup.conn);
+            var receivedEvents = eventStoreDataProvider.ReadStreamEventsForwardAsync(EventStoreSetup.StreamName, 0,
+                ref count,
+                false);
+
+            return receivedEvents;
         }
     }
 }

@@ -53,23 +53,32 @@
             return _dictSoldItems;
         }
 
-        public string PrintProductNameQuantity(Dictionary<string, int> dictProductNameQuantity)
+        public bool PrintProductNameQuantity(Dictionary<string, int> dictProductNameQuantity)
         {
-            Viewer.ConsoleWrite("Fetching current sales info:");
-
-            if (dictProductNameQuantity.Count == 0)
+            try
             {
-                return Viewer.ConsoleWrite("No sales found");
+                Viewer.ConsoleWrite("Fetching current sales info:");
+
+                if (dictProductNameQuantity.Count == 0)
+                {
+                    Viewer.ConsoleWrite("No sales found");
+                    return true;
+                }
+
+                Viewer.ConsoleWrite($"|{"Name".PadRight(20, ' ')}|{"Quantity".PadRight(10, ' ')}|");
+
+                foreach (var item in dictProductNameQuantity)
+                {
+                    Viewer.ConsoleWrite($"|{item.Key.PadRight(20, ' ')}|{item.Value.ToString().PadRight(10, ' ')}|");
+                }
+
+                return true;
             }
-
-            Viewer.ConsoleWrite($"|{"Name".PadRight(20, ' ')}|{"Quantity".PadRight(10, ' ')}|");
-
-            foreach (var item in dictProductNameQuantity)
+            catch (Exception ex)
             {
-                Viewer.ConsoleWrite($"|{item.Key.PadRight(20, ' ')}|{item.Value.ToString().PadRight(10, ' ')}|");
+                Viewer.ConsoleWrite(ex.Message);
+                return false;
             }
-
-            return "Success";
 
         }
     }

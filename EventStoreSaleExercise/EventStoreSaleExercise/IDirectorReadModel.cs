@@ -8,7 +8,7 @@ namespace EventStoreSaleExercise
     {
         decimal GetTotalSalesAmount(List<Sales> recordedEvents);
 
-        string PrintTotalSalesAmount(decimal totalSalesAmount);
+        bool PrintTotalSalesAmount(decimal totalSalesAmount);
 
         Task ReceivedEvent(EventStoreCatchUpSubscription subscription, ResolvedEvent evt);
     }

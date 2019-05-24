@@ -8,7 +8,7 @@
     {
         Dictionary<string, int> GetProductNameQuantityList(List<Sales> recordedEvents);
         
-        string PrintProductNameQuantity(Dictionary<string, int> dictProductNameQuantity);
+        bool PrintProductNameQuantity(Dictionary<string, int> dictProductNameQuantity);
 
         Task ReceivedEvent(EventStoreCatchUpSubscription subscription, ResolvedEvent evt);
     }

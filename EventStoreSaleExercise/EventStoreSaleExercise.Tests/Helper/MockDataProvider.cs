@@ -2,6 +2,18 @@
 {
     using System.Collections.Generic;
 
+    public class MockHappyDataProvider : IEventStoreDataProvider
+    {
+        public List<Sales> ReadStreamEventsForwardAsync(string streamName, long start, ref int count, bool resolveLinkTos)
+        {
+            var recordedEvents = new List<Sales>
+            {
+                new Sales( "monitor", 10, 100),
+            };
+
+            return recordedEvents;
+        }
+    }
     public class MockDataProvider : IEventStoreDataProvider
     {
         public List<Sales> ReadStreamEventsForwardAsync(string streamName, long start, ref int count, bool resolveLinkTos)

@@ -8,6 +8,19 @@
         [Fact]
         public void can_get_total_sales_amount()
         {
+            var eventStoreDataProvider = new MockHappyDataProvider();
+            var count = 100;
+            var eventStream = eventStoreDataProvider.ReadStreamEventsForwardAsync("Dummy", 0, ref count, false);
+
+            var director = new DirectorRM();
+            var totalSalesAmount = director.GetTotalSalesAmount(eventStream);
+
+            Assert.Equal(1000, totalSalesAmount);
+        }
+
+        [Fact]
+        public void can_get_total_sales_amount_when_duplicate_products_sold()
+        {
             var eventStoreDataProvider = new MockDataProvider();
             var count = 100;
             var eventStream = eventStoreDataProvider.ReadStreamEventsForwardAsync("Dummy", 0, ref count, false);
@@ -49,7 +62,7 @@
         {
             var totalSalesAmount = 1000;
             var director = new DirectorRM();
-            Assert.Equal("Success", director.PrintTotalSalesAmount(totalSalesAmount));
+            Assert.True(director.PrintTotalSalesAmount(totalSalesAmount));
         }
 
         [Fact]
@@ -57,7 +70,7 @@
         {
             var totalSalesAmount = 0;
             var director = new DirectorRM();
-            Assert.Equal("Success", director.PrintTotalSalesAmount(totalSalesAmount));
+            Assert.True(director.PrintTotalSalesAmount(totalSalesAmount));
         }
     }
 }

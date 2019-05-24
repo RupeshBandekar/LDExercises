@@ -41,13 +41,21 @@
             return _totalSales;
         }
 
-        public string PrintTotalSalesAmount(decimal totalSalesAmount)
+        public bool PrintTotalSalesAmount(decimal totalSalesAmount)
         {
-            Viewer.ConsoleWrite("Fetching total sales:");
-            Viewer.ConsoleWrite($"|{"Total sales($)".PadRight(20, ' ')}|");
-            Viewer.ConsoleWrite($"|{totalSalesAmount.ToString().PadRight(20, ' ')}|");
+            try
+            {
+                Viewer.ConsoleWrite("Fetching total sales:");
+                Viewer.ConsoleWrite($"|{"Total sales($)".PadRight(20, ' ')}|");
+                Viewer.ConsoleWrite($"|{totalSalesAmount.ToString().PadRight(20, ' ')}|");
 
-            return "Success";
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Viewer.ConsoleWrite(ex.Message);
+                return false;
+            }
         }
     }
 }

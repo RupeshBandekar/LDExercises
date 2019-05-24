@@ -8,7 +8,20 @@ namespace EventStoreSaleExercise.Tests
     public class InventoryManagerTests
     {
         [Fact]
-        public void can_get_distinct_product_name_quantity_list()
+        public void can_get_product_name_quantity_list()
+        {
+            var eventStoreDataProvider = new MockHappyDataProvider();
+            var count = 100;
+            var eventStream = eventStoreDataProvider.ReadStreamEventsForwardAsync("Dummy", 0, ref count, false);
+
+            IInventoryManagerReadModel inventory = new InventoryManagerRM();
+            var dictSoldItems = inventory.GetProductNameQuantityList(eventStream);
+
+            Assert.Single(dictSoldItems);
+            Assert.Equal(10, dictSoldItems["MONITOR"]);
+        }
+        [Fact]
+        public void can_get_distinct_product_name_quantity_of_duplicate_products()
         {
             var eventStoreDataProvider = new MockDataProvider();
             var count = 100;
@@ -76,7 +89,7 @@ namespace EventStoreSaleExercise.Tests
             };
 
             IInventoryManagerReadModel inventory = new InventoryManagerRM();
-            Assert.Equal("Success", inventory.PrintProductNameQuantity(dictProductNameQuantity));
+            Assert.True(inventory.PrintProductNameQuantity(dictProductNameQuantity));
         }
 
         [Fact]
@@ -85,7 +98,7 @@ namespace EventStoreSaleExercise.Tests
             var dictProductNameQuantity = new Dictionary<string, int>();
 
             IInventoryManagerReadModel inventory = new InventoryManagerRM();
-            Assert.Equal("No sales found", inventory.PrintProductNameQuantity(dictProductNameQuantity));
+            Assert.True(inventory.PrintProductNameQuantity(dictProductNameQuantity));
         }
     }
 }
