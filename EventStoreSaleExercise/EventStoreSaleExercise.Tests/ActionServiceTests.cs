@@ -3,7 +3,7 @@
     using Xunit;
     using EventStoreSaleExercise.Tests.Helper;
 
-    public class ViewerTests
+    public class ActionServiceTests
     {
         [Fact]
         public void can_return_welcome_salesman_message()
