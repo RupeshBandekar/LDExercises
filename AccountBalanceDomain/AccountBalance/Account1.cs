@@ -1,10 +1,8 @@
-﻿using System.Linq;
-
-namespace AccountBalanceDomain
+﻿namespace AccountBalanceDomain
 {
     using System;
     using System.Collections.Generic;
-    public class Account
+    public class Account1
     {
         private readonly List<IBaseAccountEvent> _allAccountEvents;
         private readonly Guid _accountId;
@@ -15,13 +13,13 @@ namespace AccountBalanceDomain
         private decimal _availableFund;
         
 
-        public Account(Guid accountId)
+        public Account1(Guid accountId)
         {
             _accountId = accountId;
             _allAccountEvents = new List<IBaseAccountEvent>();
         }
 
-        public static Account CreateAccount(Guid accountId, string accountHolderName)
+        public static Account1 CreateAccount(Guid accountId, string accountHolderName)
         {
             if(accountId == Guid.Empty)
                 throw new ArgumentException("Invalid Account ID");
@@ -29,7 +27,7 @@ namespace AccountBalanceDomain
             if (string.IsNullOrWhiteSpace(accountHolderName))
                 throw new ArgumentException("Invalid Account Holder Name");
 
-            Account account = new Account(accountId);
+            Account1 account = new Account1(accountId);
             var accountCreated = new AccountCreated(accountId, accountHolderName);
             account._allAccountEvents.Add(accountCreated);
             account.ApplyAccountEvents(accountCreated);
