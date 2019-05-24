@@ -70,6 +70,25 @@ namespace AccountBalanceReactive.Tests
             var exception = Assert.Throws<ReactiveDomain.Messaging.Bus.CommandException>(() => commandBus.Send(cmd));
             Assert.Equal("CreateAccount: Invalid Account Holder Name", exception.Message);
         }
-        
+
+        [Theory]
+        [InlineData("Account_Holder1", 1000.00)]
+        [Trait("Account_Balance", "2_Set_Overdraft_Limit")]
+        public void should_set_overdraft_limit(string accountHolderName, decimal overdraftLimit)
+        {
+            var cmd = new CreateAccount(
+                accountId: _accountId,
+                accountHolderName: accountHolderName,
+                source: CorrelatedMessage.NewRoot());
+
+            commandBus.Send(cmd);
+
+            var cmdOverdraftLimit = new SetOverdraftLimit(
+                accountId: _accountId, 
+                overdraftLimit: overdraftLimit,
+                source: CorrelatedMessage.NewRoot());
+
+            commandBus.Send(cmdOverdraftLimit);
+        }
     }
 }

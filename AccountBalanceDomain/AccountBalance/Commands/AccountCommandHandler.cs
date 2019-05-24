@@ -5,7 +5,9 @@
     using ReactiveDomain.Messaging.Bus;
     using ReactiveDomain.Foundation;
     using Aggregate;
-    public class AccountCommandHandler : IHandleCommand<CreateAccount>
+    public class AccountCommandHandler : 
+        IHandleCommand<CreateAccount>,
+        IHandleCommand<SetOverdraftLimit>
     {
         private readonly IRepository _repo;
         private readonly ICommandBus _inputBus;
@@ -16,6 +18,7 @@
             _inputBus = inputBus;
 
             _inputBus.Subscribe<CreateAccount>(this);
+            _inputBus.Subscribe<SetOverdraftLimit>(this);
         }
         public CommandResponse Handle(CreateAccount command)
         {
@@ -33,9 +36,20 @@
             return command.Succeed();
         }
 
-        //public CommandResponse Handle(OverdraftLimitApplied command)
-        //{
-            
-        //}
+        public CommandResponse Handle(SetOverdraftLimit command)
+        {
+            if (_repo.TryGetById<Account>(command.AccountId, out Account account) && account != null)
+            {
+                account.SetOverdraftLimit(
+                    accountId: command.AccountId,
+                    overdraftLimit: command.OverdraftLimit,
+                    source: command);
+
+                _repo.Save(account);
+                return command.Succeed();
+            }
+
+            return command.Fail();
+        }
     }
 }

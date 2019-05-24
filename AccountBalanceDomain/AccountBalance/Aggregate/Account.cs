@@ -38,11 +38,11 @@
             if (overdraftLimit <= 0)
                 throw new ArgumentException("Invalid Overdraft Limit");
 
-            var account = new Account();
-            //account.Raise(new OverdraftLimitApplied(source))
-            //{
-                
-            //};
+            Raise(new OverdraftLimitApplied(source)
+            {
+                AccountId = accountId,
+                OverdraftLimit = overdraftLimit
+            });
         }
     }
 }
