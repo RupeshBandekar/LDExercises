@@ -32,6 +32,8 @@
                         _availableFund = _availableFund + e.Fund;
                     }
                 });
+            Register<CashDeposited>(e => { _availableFund = _availableFund + e.Fund; });
+            Register<CashWithdrawn>(e => { _availableFund = _availableFund - e.Fund; });
             Register<AccountBlocked>(e => { _state = AccountState.Blocked; });
             Register<AccountUnblocked>(e => { _state = AccountState.Unblocked; });
         }
@@ -164,6 +166,62 @@
             }
 
             return chequeClearanceDay;
+        }
+
+        public void DepositCash(decimal depositFund, CorrelatedMessage source)
+        {
+            if (depositFund <= 0)
+                throw new ArgumentException("Invalid fund value");
+
+            Raise(
+                new CashDeposited(source)
+                {
+                    AccountId = Id,
+                    Fund = depositFund
+                });
+
+            if (_state == AccountState.Blocked)
+            {
+                Raise(
+                    new AccountUnblocked(source)
+                    {
+                        AccountId = Id
+                    });
+            }
+        }
+
+        public void WithdrawCash(decimal fundToWithdraw, CorrelatedMessage source)
+        {
+            if (fundToWithdraw <= 0)
+                throw new ArgumentException("Invalid fund value");
+
+            if (_state == AccountState.Blocked)
+                throw new OperationCanceledException("Account is blocked");
+
+            if (_overdraftLimit == 0 && _availableFund - fundToWithdraw < 0)
+            {
+                throw new OperationCanceledException("Insufficient fund");
+            }
+            else if ((_availableFund + _overdraftLimit - fundToWithdraw) < 0)
+            {
+                Raise(
+                    new AccountBlocked(source)
+                    {
+                        AccountId = Id,
+                        ReasonForAccountBlock = "Overdraft limit breached"
+                    });
+
+                //throw new OperationCanceledException("Overdraft limit breached");
+            }
+            else
+            {
+                Raise(
+                    new CashWithdrawn(source)
+                    {
+                        AccountId = Id,
+                        Fund = fundToWithdraw
+                    });
+            }
         }
     }
     public enum AccountState

@@ -11,6 +11,8 @@
             IHandleCommand<SetOverdraftLimit>,
             IHandleCommand<SetDailyWireTransferLimit>,
             IHandleCommand<DepositeCheque>,
+            IHandleCommand<DepositCash>,
+            IHandleCommand<WithdrawCash>,
             IDisposable
     {
         readonly IRepository _repository;
@@ -26,6 +28,8 @@
                 dispatcher.Subscribe<SetOverdraftLimit>(this),
                 dispatcher.Subscribe<SetDailyWireTransferLimit>(this),
                 dispatcher.Subscribe<DepositeCheque>(this),
+                dispatcher.Subscribe<DepositCash>(this),
+                dispatcher.Subscribe<WithdrawCash>(this)
             };
         }
 
@@ -96,6 +100,42 @@
                     throw new ValidationException($"An account with ID {account.Id} does not exists");
 
                 account.DepositCheque(command.Fund, command.DepositDate, command);
+
+                _repository.Save(account);
+                return command.Succeed();
+            }
+            catch (Exception ex)
+            {
+                return command.Fail(ex);
+            }
+        }
+
+        public CommandResponse Handle(DepositCash command)
+        {
+            try
+            {
+                if (!_repository.TryGetById<Account>(command.AccountId, out var account))
+                    throw new ValidationException($"An account with ID {account.Id} does not exists");
+
+                account.DepositCash(command.Fund, command);
+
+                _repository.Save(account);
+                return command.Succeed();
+            }
+            catch (Exception ex)
+            {
+                return command.Fail(ex);
+            }
+        }
+
+        public CommandResponse Handle(WithdrawCash command)
+        {
+            try
+            {
+                if (!_repository.TryGetById<Account>(command.AccountId, out var account))
+                    throw new ValidationException($"An account with ID {account.Id} does not exists");
+
+                account.WithdrawCash(command.Fund, command);
 
                 _repository.Save(account);
                 return command.Succeed();
