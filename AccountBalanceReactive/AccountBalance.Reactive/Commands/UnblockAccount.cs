@@ -11,8 +11,8 @@ namespace AccountBalance.Reactive.Commands
     {
         public Guid AccountId;
 
-        public UnblockAccount(Command source)
-            : base(source)
+        public UnblockAccount()
+            : base(CorrelatedMessage.NewRoot())
         {
         }
 

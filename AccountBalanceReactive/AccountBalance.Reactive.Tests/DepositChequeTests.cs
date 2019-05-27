@@ -47,7 +47,7 @@ namespace AccountBalance.Reactive.Tests
                 AccountHolderName = _accountHolderName
             };
 
-            var depositCheque = new DepositeCheque()
+            var depositCheque = new DepositCheque()
             {
                 AccountId = _accountId,
                 Fund = depositFund,
@@ -76,7 +76,7 @@ namespace AccountBalance.Reactive.Tests
                 AccountHolderName = _accountHolderName
             };
 
-            var depositCheque = new DepositeCheque()
+            var depositCheque = new DepositCheque()
             {
                 AccountId = _accountId,
                 Fund = depositFund,

@@ -34,6 +34,16 @@
                 });
             Register<CashDeposited>(e => { _availableFund = _availableFund + e.Fund; });
             Register<CashWithdrawn>(e => { _availableFund = _availableFund - e.Fund; });
+            Register<WireTransferred>(
+                e =>
+                {
+                    _availableFund = _availableFund - e.Fund;
+
+                    if (e.WireTransferDate == DateTime.Today.Date)
+                    {
+                        _dailyWireTransferLimitUtilization = _dailyWireTransferLimitUtilization + e.Fund;
+                    }
+                });
             Register<AccountBlocked>(e => { _state = AccountState.Blocked; });
             Register<AccountUnblocked>(e => { _state = AccountState.Unblocked; });
         }
@@ -202,7 +212,7 @@
             {
                 throw new OperationCanceledException("Insufficient fund");
             }
-            else if ((_availableFund + _overdraftLimit - fundToWithdraw) < 0)
+            if ((_availableFund + _overdraftLimit - fundToWithdraw) < 0)
             {
                 Raise(
                     new AccountBlocked(source)
@@ -210,8 +220,6 @@
                         AccountId = Id,
                         ReasonForAccountBlock = "Overdraft limit breached"
                     });
-
-                //throw new OperationCanceledException("Overdraft limit breached");
             }
             else
             {
@@ -220,6 +228,49 @@
                     {
                         AccountId = Id,
                         Fund = fundToWithdraw
+                    });
+            }
+        }
+
+        public void WireTransfer(decimal fundToWireTransfer, DateTime wireTransferDate, CorrelatedMessage source)
+        {
+            if (fundToWireTransfer <= 0)
+                throw new ArgumentException("Invalid fund value");
+
+            if (_state == AccountState.Blocked)
+                throw new OperationCanceledException("Account is blocked");
+
+            if (_overdraftLimit == 0 && _availableFund - fundToWireTransfer < 0)
+            {
+                throw new OperationCanceledException("Insufficient fund");
+            }
+
+            if ((_availableFund + _overdraftLimit - fundToWireTransfer) < 0)
+            {
+                Raise(
+                    new AccountBlocked(source)
+                    {
+                        AccountId = Id,
+                        ReasonForAccountBlock = "Overdraft limit breached"
+                    });
+            }
+            else if (((_dailyWireTransferLimit - _dailyWireTransferLimitUtilization) - fundToWireTransfer) < 0)
+            {
+                Raise(
+                    new AccountBlocked(source)
+                    {
+                        AccountId = Id,
+                        ReasonForAccountBlock = "Daily wire transfer limit breached"
+                    });
+            }
+            else
+            {
+                Raise(
+                    new WireTransferred(source)
+                    {
+                        AccountId = Id,
+                        Fund = fundToWireTransfer,
+                        WireTransferDate = wireTransferDate
                     });
             }
         }
