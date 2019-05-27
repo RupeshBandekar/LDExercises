@@ -2,8 +2,8 @@
 {
     using Xunit;
 
-    [CollectionDefinition("AggregateTest")]
-    public sealed class AggregateTestCollection : ICollectionFixture<EventStoreFixture>
+    [CollectionDefinition("AccountBalanceTest")]
+    public sealed class AccountBalanceTestCollection : ICollectionFixture<EventStoreFixture>
     {
     }
 }

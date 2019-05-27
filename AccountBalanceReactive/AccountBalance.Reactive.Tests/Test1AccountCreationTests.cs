@@ -3,19 +3,16 @@
     using Xunit;
     using System;
     using System.Threading.Tasks;
-    using AccountBalance.Reactive.Commands;
-    using AccountBalance.Reactive.Events;
     using AccountBalance.Reactive.Tests.Common;
-    using ReactiveDomain.Messaging;
     using Xunit.ScenarioReporting;
 
-    [Collection("AggregateTest")]
-    public class AccountCreationTests : IDisposable
+    [Collection("AccountBalanceTest")]
+    public class Test1AccountCreationTests : IDisposable
     {
         readonly Guid _accountId;
         readonly EventStoreScenarioRunner<Account> _runner;
 
-        public AccountCreationTests(EventStoreFixture fixture)
+        public Test1AccountCreationTests(EventStoreFixture fixture)
         {
             _accountId = Guid.NewGuid();
             _runner = new EventStoreScenarioRunner<Account>(

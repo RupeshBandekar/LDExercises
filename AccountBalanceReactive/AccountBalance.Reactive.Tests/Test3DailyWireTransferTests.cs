@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AccountBalance.Reactive.Tests
+﻿namespace AccountBalance.Reactive.Tests
 {
+    using System;
+    using System.Threading.Tasks;
     using AccountBalance.Reactive.Commands;
     using AccountBalance.Reactive.Events;
     using AccountBalance.Reactive.Tests.Common;
@@ -13,14 +9,14 @@ namespace AccountBalance.Reactive.Tests
     using Xunit;
     using Xunit.ScenarioReporting;
 
-    [Collection("AggregateTest")]
-    public class DailyWireTransferTests : IDisposable
+    [Collection("AccountBalanceTest")]
+    public class Test3DailyWireTransferTests : IDisposable
     {
         readonly Guid _accountId;
         readonly string _accountHolderName;
         readonly EventStoreScenarioRunner<Account> _runner;
 
-        public DailyWireTransferTests(EventStoreFixture fixture)
+        public Test3DailyWireTransferTests(EventStoreFixture fixture)
         {
             _accountId = Guid.NewGuid();
             _accountHolderName = "Test_Account_Holder";
@@ -62,9 +58,51 @@ namespace AccountBalance.Reactive.Tests
 
         [Theory]
         [InlineData(2000.00, 500.00, 500.00)]
-        public void Can_reset_daily_wire_transfer_utilization(decimal fundAvailable, decimal dailyWireTransferLimit,
+        public async Task Can_consider_fresh_daily_wire_transfer_utilization(decimal availableFund, decimal dailyWireTransferLimit,
             decimal fundToWireTransfer)
         {
+            var accountCreated = new AccountCreated(CorrelatedMessage.NewRoot())
+            {
+                AccountId = _accountId,
+                AccountHolderName = _accountHolderName
+            };
+
+            var dailyWireTransferLimitApplied = new DailyWireTransferLimitApplied(CorrelatedMessage.NewRoot())
+            {
+                AccountId = _accountId,
+                DailyWireTransferLimit = dailyWireTransferLimit
+            };
+
+            var cashDeposited = new CashDeposited(CorrelatedMessage.NewRoot())
+            {
+                AccountId = _accountId,
+                Fund = availableFund
+            };
+
+            var wireTransferredYesterday = new WireTransferred(CorrelatedMessage.NewRoot())
+            {
+                AccountId = _accountId,
+                Fund = fundToWireTransfer,
+                WireTransferDate = DateTime.Today.AddDays(-1)
+            };
+
+            var wireTransferToday = new WireTransfer()
+            {
+                AccountId = _accountId,
+                Fund = fundToWireTransfer,
+                WireTransferDate = DateTime.Today
+            };
+
+            var wireTransferredToday = new WireTransferred(wireTransferToday)
+            {
+                AccountId = wireTransferToday.AccountId,
+                Fund = wireTransferToday.Fund,
+                WireTransferDate = wireTransferToday.WireTransferDate
+            };
+
+            var givens = new Event[] { accountCreated, dailyWireTransferLimitApplied, cashDeposited, wireTransferredYesterday };
+
+            await _runner.Run(def => def.Given(givens).When(wireTransferToday).Then(wireTransferredToday));
         }
 
         [Theory]

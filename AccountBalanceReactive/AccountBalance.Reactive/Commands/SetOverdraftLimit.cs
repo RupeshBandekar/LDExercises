@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AccountBalance.Reactive.Commands
+﻿namespace AccountBalance.Reactive.Commands
 {
+    using System;
     using ReactiveDomain.Messaging;
 
     public class SetOverdraftLimit : Command

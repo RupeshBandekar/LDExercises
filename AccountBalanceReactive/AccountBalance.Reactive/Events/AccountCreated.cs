@@ -4,9 +4,6 @@
     using Newtonsoft.Json;
     using ReactiveDomain.Messaging;
 
-    /// <summary>
-    /// Indicates that a bank account has been created.
-    /// </summary>
     public sealed class AccountCreated : Event
     {
         public AccountCreated(CorrelatedMessage source)

@@ -1,27 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
-
-namespace AccountBalance.Reactive.Tests
+﻿namespace AccountBalance.Reactive.Tests
 {
-    using System.Runtime.InteropServices;
+    using System;
+    using System.Threading.Tasks;
     using AccountBalance.Reactive.Commands;
     using AccountBalance.Reactive.Events;
     using AccountBalance.Reactive.Tests.Common;
     using ReactiveDomain.Messaging;
+    using Xunit;
     using Xunit.ScenarioReporting;
 
-    [Collection("AggregateTest")]
-    public class OverdraftLimitTests : IDisposable
+    [Collection("AccountBalanceTest")]
+    public class Test5DepositCashTests : IDisposable
     {
         readonly Guid _accountId;
         readonly string _accountHolderName;
         readonly EventStoreScenarioRunner<Account> _runner;
 
-        public OverdraftLimitTests(EventStoreFixture fixture)
+        public Test5DepositCashTests(EventStoreFixture fixture)
         {
             _accountId = Guid.NewGuid();
             _accountHolderName = "Test_Account_Holder";
@@ -38,7 +33,7 @@ namespace AccountBalance.Reactive.Tests
 
         [Theory]
         [InlineData(1000.00)]
-        public async Task Can_set_overdraft_limit(decimal overdraftLimit)
+        public async Task Can_deposit_cash(decimal depositFund)
         {
             var accountCreated = new AccountCreated(CorrelatedMessage.NewRoot())
             {
@@ -46,25 +41,25 @@ namespace AccountBalance.Reactive.Tests
                 AccountHolderName = _accountHolderName
             };
 
-            var setOverdraftLimit = new SetOverdraftLimit()
+            var depositCash = new DepositCash()
             {
                 AccountId = _accountId,
-                OverdraftLimit = overdraftLimit
+                Fund = depositFund
             };
 
-            var overdraftLimitApplied = new OverdraftLimitApplied(setOverdraftLimit)
+            var cashDeposited = new CashDeposited(depositCash)
             {
-                AccountId = setOverdraftLimit.AccountId,
-                OverdraftLimit = setOverdraftLimit.OverdraftLimit
+                AccountId = depositCash.AccountId,
+                Fund = depositCash.Fund
             };
 
-            await _runner.Run(def => def.Given(accountCreated).When(setOverdraftLimit).Then(overdraftLimitApplied));
+            await _runner.Run(def => def.Given(accountCreated).When(depositCash).Then(cashDeposited));
         }
 
         [Theory]
         [InlineData(-1000.00)]
         [InlineData(0)]
-        public async Task Can_throw_exception_on_setting_invalid_overdraft_limit(decimal overdraftLimit)
+        public async Task Can_throw_exception_on_depositing_invalid_cash(decimal depositFund)
         {
             var accountCreated = new AccountCreated(CorrelatedMessage.NewRoot())
             {
@@ -72,15 +67,14 @@ namespace AccountBalance.Reactive.Tests
                 AccountHolderName = _accountHolderName
             };
 
-            var setOverdraftLimit = new SetOverdraftLimit()
+            var depositCash = new DepositCash()
             {
                 AccountId = _accountId,
-                OverdraftLimit = overdraftLimit
+                Fund = depositFund
             };
 
             await _runner.Run(
-                def => def.Given(accountCreated).When(setOverdraftLimit)
-                    .Throws(new ArgumentException("Invalid Overdraft Limit")));
+                def => def.Given(accountCreated).When(depositCash).Throws(new ArgumentException("Invalid fund value")));
         }
     }
 }

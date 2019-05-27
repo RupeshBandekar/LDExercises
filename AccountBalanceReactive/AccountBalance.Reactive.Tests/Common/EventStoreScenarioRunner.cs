@@ -10,10 +10,6 @@
     using ReactiveDomain.Messaging.Bus;
     using Xunit.ScenarioReporting;
 
-    /// <summary>
-    /// TODO: work out why this isn't working properly
-    /// </summary>
-    /// <typeparam name="TAggregate"></typeparam>
     public class EventStoreScenarioRunner<TAggregate> : ReflectionBasedScenarioRunner<Event, Command, Event>, IDisposable
         where TAggregate : EventDrivenStateMachine
     {
@@ -77,7 +73,6 @@
 
         protected override Task When(Command when)
         {
-            // If running in debugger...
             try
             {
                 _bus.Fire(when);
@@ -96,7 +91,6 @@
             var slice = _fixture.StreamStoreConnection.ReadStreamForward(
                 _streamName,
                 _readFromEvent,
-                // Greater than 4096, we need to page, but this should not be a problem in tests
                 4096
             );
 

@@ -1,13 +1,8 @@
 ﻿namespace AccountBalance.Reactive.Tests.Common
 {
-
-
     using System;
     using System.Net;
-    using EventStore.ClientAPI;
-    using EventStore.ClientAPI.Embedded;
     using EventStore.ClientAPI.Projections;
-    using EventStore.Core;
     using ReactiveDomain;
     using ReactiveDomain.EventStore;
     using ReactiveDomain.Foundation;

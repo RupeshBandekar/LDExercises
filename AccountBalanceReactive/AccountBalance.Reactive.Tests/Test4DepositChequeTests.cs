@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AccountBalance.Reactive.Tests
+﻿namespace AccountBalance.Reactive.Tests
 {
+    using System;
+    using System.Threading.Tasks;
     using AccountBalance.Reactive.Commands;
     using AccountBalance.Reactive.Events;
     using AccountBalance.Reactive.Tests.Common;
@@ -14,15 +10,15 @@ namespace AccountBalance.Reactive.Tests
     using Xunit;
     using Xunit.ScenarioReporting;
 
-    [Collection("AggregateTest")]
-    public class DepositChequeTests : IDisposable
+    [Collection("AccountBalanceTest")]
+    public class Test4DepositChequeTests : IDisposable
     {
 
         readonly Guid _accountId;
         readonly string _accountHolderName;
         readonly EventStoreScenarioRunner<Account> _runner;
 
-        public DepositChequeTests(EventStoreFixture fixture)
+        public Test4DepositChequeTests(EventStoreFixture fixture)
         {
             _accountId = Guid.NewGuid();
             _accountHolderName = "Test_Account_Holder";

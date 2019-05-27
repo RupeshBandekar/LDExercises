@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AccountBalance.Reactive.Events
+﻿namespace AccountBalance.Reactive.Events
 {
+    using System;
     using Newtonsoft.Json;
     using ReactiveDomain.Messaging;
 

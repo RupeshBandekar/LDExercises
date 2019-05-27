@@ -2,7 +2,6 @@
 {
     using System;
     using AccountBalance.Reactive.Events;
-    using NodaTime;
     using ReactiveDomain;
     using ReactiveDomain.Messaging;
 
