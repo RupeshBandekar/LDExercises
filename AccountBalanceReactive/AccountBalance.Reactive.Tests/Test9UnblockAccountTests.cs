@@ -32,8 +32,8 @@
         }
 
         [Theory]
-        [InlineData(50.00)]
-        public async Task Can_unblock_account_on_cash_deposit(decimal depositFund)
+        [InlineData(500.00, 100.00)]
+        public async Task Can_unblock_account_on_cash_deposit(decimal depositFund, decimal fundToWithraw)
         {
             var accountCreated = new AccountCreated(CorrelatedMessage.NewRoot())
             {
@@ -47,31 +47,32 @@
                 ReasonForAccountBlock = "Overdraft limit breached"
             };
 
-            var depositCash = new DepositCash()
+            var cashDeposited = new CashDeposited(CorrelatedMessage.NewRoot())
             {
                 AccountId = _accountId,
                 Fund = depositFund
             };
 
-            var cashDeposited = new CashDeposited(depositCash)
+            var withdrawCash = new WithdrawCash()
             {
-                AccountId = depositCash.AccountId,
-                Fund = depositFund
+                AccountId = _accountId,
+                Fund = fundToWithraw
             };
 
-            var accountUnblocked = new AccountUnblocked(depositCash)
+            var cashWithdrawn = new CashWithdrawn(withdrawCash)
             {
-                AccountId = depositCash.AccountId
+                AccountId = withdrawCash.AccountId,
+                Fund = withdrawCash.Fund
             };
 
-            var givens = new Event[] { accountCreated, accountBlocked };
-            var thens = new Event[] {cashDeposited, accountUnblocked};
+            var givens = new Event[] { accountCreated, accountBlocked, cashDeposited };
 
-            await _runner.Run(def => def.Given(givens).When(depositCash).Then(thens));
+            await _runner.Run(def => def.Given(givens).When(withdrawCash).Then(cashWithdrawn));
         }
 
-        [Fact]
-        public async Task Can_unblock_account_on_cheque_fund_made_available()
+        [Theory]
+        [InlineData(500.00, 100.00)]
+        public async Task Can_unblock_account_on_cheque_fund_made_available(decimal depositFund, decimal fundToWithraw)
         {
             var accountCreated = new AccountCreated(CorrelatedMessage.NewRoot())
             {
@@ -85,30 +86,29 @@
                 ReasonForAccountBlock = "Overdraft limit breached"
             };
 
-            var depositCheque = new DepositCheque()
+            var chequeDeposited = new ChequeDeposited(CorrelatedMessage.NewRoot())
             {
                 AccountId = _accountId,
-                Fund = 1000,
-                DepositDate = new DateTime(2019, 04, 15, 10, 00, 00)
-            };
-
-            var chequeDeposited = new ChequeDeposited(depositCheque)
-            {
-                AccountId = depositCheque.AccountId,
-                Fund = depositCheque.Fund,
-                DepositDate = depositCheque.DepositDate,
+                Fund = depositFund,
+                DepositDate = new DateTime(2019, 04, 15, 10, 00, 00),
                 ClearanceBusinessDay = new DateTime(2019, 04, 16, 10, 00, 00)
             };
 
-            var accountUnblocked = new AccountUnblocked(chequeDeposited)
+            var withdrawCash = new WithdrawCash()
             {
-                AccountId = chequeDeposited.AccountId
+                AccountId = _accountId,
+                Fund = fundToWithraw
             };
 
-            var givens = new Event[] { accountCreated, accountBlocked};
-            var thens = new Event[] { chequeDeposited, accountUnblocked };
+            var cashWithdrawn = new CashWithdrawn(withdrawCash)
+            {
+                AccountId = withdrawCash.AccountId,
+                Fund = withdrawCash.Fund
+            };
 
-            await _runner.Run(def => def.Given(givens).When(depositCheque).Then(thens));
+            var givens = new Event[] { accountCreated, accountBlocked, chequeDeposited };
+
+            await _runner.Run(def => def.Given(givens).When(withdrawCash).Then(cashWithdrawn));
         }
     }
 }

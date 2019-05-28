@@ -24,14 +24,21 @@
                     if (e.ClearanceBusinessDay.Date < DateTime.Today.Date)
                     {
                         _availableFund = _availableFund + e.Fund;
+                        if (_state == AccountState.Blocked) _state = AccountState.Unblocked;
                     }
                     else if (e.ClearanceBusinessDay.Date == DateTime.Today.Date &&
                              DateTime.Now.TimeOfDay >= Convert.ToDateTime("09:00:00 AM").TimeOfDay)
                     {
                         _availableFund = _availableFund + e.Fund;
+                        if (_state == AccountState.Blocked) _state = AccountState.Unblocked;
                     }
                 });
-            Register<CashDeposited>(e => { _availableFund = _availableFund + e.Fund; });
+            Register<CashDeposited>(
+                e =>
+                {
+                    _availableFund = _availableFund + e.Fund;
+                    if (_state == AccountState.Blocked) _state = AccountState.Unblocked;
+                });
             Register<CashWithdrawn>(e => { _availableFund = _availableFund - e.Fund; });
             Register<WireTransferred>(
                 e =>
@@ -44,7 +51,7 @@
                     }
                 });
             Register<AccountBlocked>(e => { _state = AccountState.Blocked; });
-            Register<AccountUnblocked>(e => { _state = AccountState.Unblocked; });
+            //Register<AccountUnblocked>(e => { _state = AccountState.Unblocked; });
         }
 
         public static Account CreateAccount(Guid accountId, string accountHolderName, CorrelatedMessage source)
@@ -106,14 +113,14 @@
                     ClearanceBusinessDay = GetChequeClearanceDay(depositDate)
                 });
 
-            if (_state == AccountState.Blocked)
-            {
-                Raise(
-                    new AccountUnblocked(source)
-                    {
-                        AccountId = Id
-                    });
-            }
+            //if (_state == AccountState.Blocked)
+            //{
+            //    Raise(
+            //        new AccountUnblocked(source)
+            //        {
+            //            AccountId = Id
+            //        });
+            //}
         }
 
         private DateTime GetChequeClearanceDay(DateTime depositDate)
@@ -189,14 +196,14 @@
                     Fund = depositFund
                 });
 
-            if (_state == AccountState.Blocked)
-            {
-                Raise(
-                    new AccountUnblocked(source)
-                    {
-                        AccountId = Id
-                    });
-            }
+            //if (_state == AccountState.Blocked)
+            //{
+            //    Raise(
+            //        new AccountUnblocked(source)
+            //        {
+            //            AccountId = Id
+            //        });
+            //}
         }
 
         public void WithdrawCash(decimal fundToWithdraw, CorrelatedMessage source)
@@ -274,14 +281,10 @@
             }
         }
     }
+
     public enum AccountState
     {
         Unblocked = 0,
         Blocked = 1
-    }
-    public enum BlockAccountReasonType
-    {
-        OverdraftLimitBreach = 0,
-        DailyWireTransferLimitBreach = 1
     }
 }
