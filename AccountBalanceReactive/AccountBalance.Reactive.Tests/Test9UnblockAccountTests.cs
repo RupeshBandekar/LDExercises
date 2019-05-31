@@ -5,6 +5,7 @@
     using AccountBalance.Reactive.Commands;
     using AccountBalance.Reactive.Events;
     using AccountBalance.Reactive.Tests.Common;
+    using AccountBalance.Reactive.Tests.Helper;
     using ReactiveDomain.Messaging;
     using Xunit;
     using Xunit.ScenarioReporting;
@@ -70,9 +71,11 @@
             await _runner.Run(def => def.Given(givens).When(withdrawCash).Then(cashWithdrawn));
         }
 
+        //[Theory]
+        //[InlineData(500.00, 100.00)]
         [Theory]
-        [InlineData(500.00, 100.00)]
-        public async Task Can_unblock_account_on_cheque_fund_made_available(decimal depositFund, decimal fundToWithraw)
+        [MemberData(nameof(TestDataGenerator.GetDepositChequeDataUnblockAccount), MemberType = typeof(TestDataGenerator))]
+        public async Task Can_unblock_account_on_cheque_fund_made_available(decimal depositFund, decimal fundToWithraw, DateTime depositDate, DateTime clearanceDate)
         {
             var accountCreated = new AccountCreated(CorrelatedMessage.NewRoot())
             {
@@ -90,8 +93,8 @@
             {
                 AccountId = _accountId,
                 Fund = depositFund,
-                DepositDate = new DateTime(2019, 04, 15, 10, 00, 00),
-                ClearanceBusinessDay = new DateTime(2019, 04, 16, 10, 00, 00)
+                DepositDate = depositDate,//new DateTime(2019, 04, 15, 10, 00, 00),
+                ClearanceBusinessDay = clearanceDate//new DateTime(2019, 04, 16, 10, 00, 00)
             };
 
             var withdrawCash = new WithdrawCash()
