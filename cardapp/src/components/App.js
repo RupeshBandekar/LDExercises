@@ -9,18 +9,21 @@ import '../styles/App.css';
 	];
 
 const CardList = (props) => (
-  <Card />
+  <div>
+    <Card {...testData[0]}/>
+    <Card {...testData[1]}/>
+  </div>
 );
 
 class Card extends React.Component{
   render(){
-    const profile = testData[0];
+    const profile = this.props;
     return(      
-      <div className="github-profile">
-        <img src={profile.avatar_url} />
-        <div className="info">
-          <div className="name">{profile.name}</div>
-          <div className="company">{profile.company}</div>
+      <div style={{margin: '1rem'}}>
+        <img style={{width: '75px'}} src={profile.avatar_url} />
+        <div style={{display: 'inline-block', marginLeft:'12px'}}>
+          <div style={{fontSize: '1.25rem', fontWeight: 'bold'}}>{profile.name}</div>
+          <div style={{boxSizing: 'border-box'}}>{profile.company}</div>
         </div>
       </div>
     );
@@ -31,7 +34,7 @@ class App extends React.Component{
   render(){
     return (
       <div>
-        <div className="header">{this.props.title}</div>
+        <div style={{textAlign: 'center', fontSize: '1.5rem', marginBottom: '1rem'}}>{this.props.title}</div>
         <CardList />
       </div>
     );
