@@ -10,8 +10,7 @@ import '../styles/App.css';
 
 const CardList = (props) => (
   <div>
-    <Card {...testData[0]}/>
-    <Card {...testData[1]}/>
+    {props.profiles.map(profile => <Card {...profile}/>)}
   </div>
 );
 
@@ -30,12 +29,47 @@ class Card extends React.Component{
   }
 }
 
+class Form extends React.Component{
+  state = {userName: ''};
+  handleSubmit = (event) =>{
+    event.preventDefault();
+    console.log(this.state.userName);
+  };
+    
+  render(){    
+    return(
+      <form onSubmit={this.handleSubmit}>
+        <input 
+        type="text" 
+        value={this.state.userName}
+        onChange={event => this.setState({userName: event.target.value})}
+        placeholder="Username"
+        required>          
+        </input>
+        <button>Add card</button>
+      </form>
+    );
+  }
+}
+
 class App extends React.Component{
+  /* constructor(props){
+    super(props);
+    this.state = {
+      profiles: testData,
+    };
+  }; */
+
+  state ={
+    profiles: testData,
+  };
+  
   render(){
     return (
       <div>
         <div style={{textAlign: 'center', fontSize: '1.5rem', marginBottom: '1rem'}}>{this.props.title}</div>
-        <CardList />
+        <Form />
+        <CardList profiles={this.state.profiles}/>
       </div>
     );
   }
