@@ -25,9 +25,9 @@
 
         public static object[][] GetDepositChequeDataUnblockAccount = new object[][]
         {
-            //Monday Before 05:00PM
+            //for satisfying the condition: ClearanceBusinessDay < DateTime.Today.Date
             new object[] { 500.00, 100.00, new DateTime(2019, 04, 15, 10, 00, 00), new DateTime(2019, 04, 16, 10, 00, 00)},
-            //Monday 09:00AM - 05:00PM
+            //for satisfying the condition: ClearanceBusinessDay.Date == DateTime.Today.Date && DateTime.Now.TimeOfDay >= Convert.ToDateTime("09:00:00 AM").TimeOfDay)
             new object[] { 500.00, 100.00, new DateTime(2019, 04, 15, 10, 00, 00), DateTime.Today },
         };
     }
