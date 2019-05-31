@@ -33,12 +33,20 @@ const PlayAgain = props => (
 	</div>
 );
 
-const StarMatch = () => {
+const StarMatch = () =>{
+  const [gameId, setGameId] = useState(1);
+  return(
+    <Game key={gameId} startNewGame={() => setGameId(gameId + 1)}/>
+  )
+};
+
+
+const Game = (props) => {
   const [stars, setStars] = useState(utils.random(1, 9));
   const [availableNums, setAvailableNums] = useState(utils.range(1, 9));
   const [candidateNums, setCandidateNums] = useState([]);
   
-  const [secondsLeft, setSecondsLeft] = useState(10);
+  const [secondsLeft, setSecondsLeft] = useState(20);
 
 	useEffect(() => {
   	if (secondsLeft > 0 && availableNums.length > 0) {
@@ -55,13 +63,7 @@ const StarMatch = () => {
   	? 'won'
     : secondsLeft === 0 ? 'lost' : 'active'  
   
-  const resetGame = () => {
-  	setStars(utils.random(1, 9));
-    setAvailableNums(utils.range(1, 9));
-    setCandidateNums([]);
-  };
-
-  const numberStatus = number => {
+    const numberStatus = number => {
     if (!availableNums.includes(number)) {
       return 'used';
     }
@@ -101,7 +103,7 @@ const StarMatch = () => {
       <div className="body">
         <div className="left">
           {gameStatus !== 'active' ? (
-          	<PlayAgain onClick={resetGame} gameStatus={gameStatus} />
+          	<PlayAgain onClick={props.startNewGame} gameStatus={gameStatus} />
           ) : (
           	<StarsDisplay count={stars} />
           )}
