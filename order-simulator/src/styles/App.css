@@ -1,3 +1,7 @@
 .portfolio-column {
   display: inline;
+  border-style: ridge;
+}
+.sendorder-column {
+  display: inline;
 }
