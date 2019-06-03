@@ -15,9 +15,6 @@ class PortfolioData extends React.Component{
         <div className="portfolio-column">
           {portfolioData.price}
         </div>
-        <div className="portfolio-column">
-          Buy/Sell
-        </div>
       </div>
     );
   }
@@ -39,9 +36,6 @@ class Portfolio extends React.Component{
       <div className="portfolio-column">
         Buy Price
       </div>
-      <div className="portfolio-column">
-        Action
-      </div>
       {this.props.portfolio.map(portfolioData => <PortfolioData key={portfolioData.id} {...portfolioData}/>)}
     </div>
     
@@ -51,7 +45,8 @@ class Portfolio extends React.Component{
 
 
 class SendOrder extends React.Component{
-  state = {action:'0', quantity: '', price: '', asset: '0'};
+  state = {txnDate: "", txnType: "0", asset: "0", quantity: "", price: "", txnStatus: "", failureReason: ""}
+  //{asset: '0', quantity: '', price: ''};
   handleSendOrder = event => {
     event.preventDefault();
     this.props.onSubmit(this.state);
@@ -65,10 +60,10 @@ class SendOrder extends React.Component{
         </div>
         <div>
           <div className="sendorder-column">
-            <select value={this.state.action} onChange={event => this.setState({action: event.target.value})}>
+            <select value={this.state.txnType} onChange={event => this.setState({txnType: event.target.value})}>
               <option value="0">Action</option>
-              <option value="Buy">Buy</option>
-              <option value="Sell">Sell</option>
+              <option value="B">Buy</option>
+              <option value="S">Sell</option>
             </select>          
           </div>
           <div className="sendorder-column">
@@ -102,39 +97,149 @@ class SendOrder extends React.Component{
   };
 }
 
+class TransactionData extends React.Component{
+  render(){
+    const txnHistoryData = this.props;
+    return(
+      <div>        
+        <div className="transaction-column">
+        {txnHistoryData.txnDate}
+        </div>
+        <div className="transaction-column">
+          {txnHistoryData.txnType}
+        </div>
+        <div className="transaction-column">
+          {txnHistoryData.asset}
+        </div>
+        <div className="transaction-column">
+          {txnHistoryData.quantity}
+        </div>
+        <div className="transaction-column">
+          {txnHistoryData.price}
+        </div>        
+        <div className="transaction-column">
+          {txnHistoryData.txnStatus}
+        </div>
+        <div className="transaction-column">
+          {txnHistoryData.failureReason}
+        </div>
+      </div>
+    );
+  };
+}
+
+class TransactionHistory extends React.Component{
+  render(){
+    return(
+      <div>
+        <div>
+          Transaction History:
+        </div>
+        <div className="transaction-column">
+          Txn Time
+        </div>
+        <div className="transaction-column">
+          Txn Type
+        </div>
+        <div className="transaction-column">
+          Asset
+        </div>
+        <div className="transaction-column">
+          Quantity
+        </div>        
+        <div className="transaction-column">
+          Txn Amount
+        </div>
+        <div className="transaction-column">
+          Txn Status
+        </div>
+        <div className="transaction-column">
+          Remarks
+        </div>
+        {this.props.txnHistory.map(txnData => <TransactionData key={txnData.id} {...txnData}/>)}
+      </div>
+    );
+  };
+}
+
 class App extends React.Component {
 
   state = {
     portfolio: [
-      {action: "Buy", quantity: "100", asset: "GOOGL", price: "250.00"},
-      {action: "Buy", quantity: "250", asset: "MO", price: "412.00"},
-      {action: "Buy", quantity: "325", asset: "AMZN", price: "645.25"},
+      {quantity: 100, asset: "GOOGL", price: 250.00},
+      {quantity: 250, asset: "MO", price: 412.00},
+      {quantity: 325, asset: "AMZN", price: 645.25},
+    ],
+
+    txnHistory: [
+      {txnDate: "6/3/2019 2:19:15 PM", txnType: "B", asset: "GOOGL", quantity: 500, price: 105.25, txnStatus: "S", failureReason: ""},
+      {txnDate: "6/3/2019 2:20:55 PM", txnType: "B", asset: "GOOGL", quantity: 500, price: 105.25, txnStatus: "S", failureReason: ""},
+      {txnDate: "6/3/2019 2:22:30 PM", txnType: "S", asset: "GOOGL", quantity: 1005, price: 105.25, txnStatus: "F", failureReason: "Quantity for sell exceeds the quantity available"},
     ],
   };
 
   addNewPortfolioData = (portfolioData) => {
+    const item = this.state.portfolio.filter(x => x.asset === portfolioData.asset);
+    if(item.length > 0)
+    {
+      console.log(item);
+    }
+    else {
+      this.setState(prevPortfolio => ({
+        portfolio: [...prevPortfolio.portfolio, portfolioData],
+      }));
+    }    // console.log("inside App");
+  };
 
-  const item = this.state.portfolio.filter(x => x.asset === portfolioData.asset);
-  if(item.length > 0)
-  {
-    console.log(item);
-  }
-  else {
-    this.setState(prevPortfolio => ({
-      portfolio: [...prevPortfolio.portfolio, portfolioData],
+  addNewTxnHistory = (txnData) => {
+    var today = new Date();
+    var date = today.getDate() + '-' + (today.getMonth()+1) + '-' + today.getFullYear();
+    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    var dateTime = date + ' ' + time;
+
+    txnData.txnDate = dateTime;
+
+    this.setState(prevTxn => ({
+      txnHistory: [...prevTxn.txnHistory, txnData],
     }));
-  }
+  };
 
-    
+  
+  validateOrder = (orderData) => {
+    //https://stackoverflow.com/questions/29537299/react-how-do-i-update-state-item1-on-setstate-with-jsfiddle
+    console.log("inside validate order");
+    console.log(orderData.txnType);
+    if(orderData.txnType === "S")
+    {
+      const portfolioPosition = this.state.portfolio.filter(x => x.asset === orderData.asset);
+      if(portfolioPosition.length > 0)
+      {
+        //if asset is present in portfolio
+        if(portfolioPosition[0].quantity < orderData.quantity)
+        {
+          orderData.txnStatus = "F";
+          orderData.failureReason = "Quantity for sell exceeds the portfolio quantity";
+        }
+      }
+      else
+      {
+        //asset is not present in portfolio
+        orderData.txnStatus = "F";
+        orderData.failureReason = "Asset for sell does not exist in portfolio";
+      }
+    }
 
-    // console.log("inside App");
+    this.setState()
+
+    this.addNewTxnHistory(orderData);
   };
 
   render(){
     return (
-      <div>
+      <div>        
         <Portfolio portfolio={this.state.portfolio}/>
-        <SendOrder onSubmit={this.addNewPortfolioData} />
+        <SendOrder onSubmit={this.validateOrder} />
+        <TransactionHistory txnHistory={this.state.txnHistory}/>
       </div>
     );
   }

@@ -5,3 +5,8 @@
 .sendorder-column {
   display: inline;
 }
+
+.transaction-column {
+  display: inline;
+  border-style: ridge;
+}
