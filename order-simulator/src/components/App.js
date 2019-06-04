@@ -52,6 +52,14 @@ class SendOrder extends React.Component{
     this.props.onSubmit(this.state);
     //this.setState({action:'0', quantity: '', price: '', asset: '0'});
   };
+
+  validateQuantity = (event) => {    
+    const re = /^[0-9\b]+$/;
+      if (event.target.value === '' || re.test(event.target.value)) {
+        this.setState({quantity: event.target.value});
+      }
+  }
+
   render(){
     return(
       <form onSubmit={this.handleSendOrder}>
@@ -60,19 +68,20 @@ class SendOrder extends React.Component{
         </div>
         <div>
           <div className="sendorder-column">
-            <select value={this.state.txnType} onChange={event => this.setState({txnType: event.target.value})}>
-              <option value="0">Action</option>
+            <select id="ddlAction" value={this.state.txnType} onChange={event => this.setState({txnType: event.target.value})}>
+              <option value="">Action</option>
               <option value="B">Buy</option>
               <option value="S">Sell</option>
             </select>          
           </div>
           <div className="sendorder-column">
-          <input type="text" placeholder="Quantity" value={this.state.quantity} onChange={event => this.setState({quantity: event.target.value})}></input>
+          <input id="txtQuantity" type="text" value={this.state.quantity}  placeholder="Quantity" 
+          onChange={event => this.validateQuantity(event)} required onInvalid="this.setCustomValidity('enter quantity')" onInput="this.setCustomValidity('')"></input>
           </div>
           <div className="sendorder-column">
             Asset:
-            <select value={this.state.asset} onChange={event => this.setState({asset: event.target.value})}>
-              <option value="0">Select</option>
+            <select id="ddlAsset" value={this.state.asset} onChange={event => this.setState({asset: event.target.value})}>
+              <option value="">Select</option>
               <option value="GOOGL" title="	Alphabet Inc Class A">GOOGL</option>
               <option value="MO" title="Altria Group Inc">MO</option>
               <option value="AMZN" title="Amazon.com Inc.">AMZN</option>
@@ -86,11 +95,12 @@ class SendOrder extends React.Component{
             </select>          
           </div>
           <div className="sendorder-column">
-            <input type="text" placeholder="Price" value={this.state.price} onChange={event => this.setState({price: event.target.value})}></input>
+            <input id="txtPrice" type="text" placeholder="Price" value={this.state.price} onChange={event => this.setState({price: event.target.value})}></input>
           </div>
         </div>
         <div>
           <button>Send Order</button>
+          <label id="lblError"></label>
         </div>
       </form>
     );
@@ -178,7 +188,7 @@ class App extends React.Component {
     ],
   };
 
-  addNewPortfolioData = (portfolioData) => {
+  updatePortfolio = (portfolioData) => {
     const item = this.state.portfolio.filter(x => x.asset === portfolioData.asset);
     if(item.length > 0)
     {
@@ -209,9 +219,9 @@ class App extends React.Component {
     //https://stackoverflow.com/questions/29537299/react-how-do-i-update-state-item1-on-setstate-with-jsfiddle
     console.log("inside validate order");
     console.log(orderData.txnType);
+    const portfolioPosition = this.state.portfolio.filter(x => x.asset === orderData.asset);
     if(orderData.txnType === "S")
-    {
-      const portfolioPosition = this.state.portfolio.filter(x => x.asset === orderData.asset);
+    {      
       if(portfolioPosition.length > 0)
       {
         //if asset is present in portfolio
@@ -228,10 +238,21 @@ class App extends React.Component {
         orderData.failureReason = "Asset for sell does not exist in portfolio";
       }
     }
-
-    this.setState()
-
+    
     this.addNewTxnHistory(orderData);
+
+    if(orderData.txnStatus === "S") {
+      this.updatePortfolio(orderData);
+    }
+    
+
+    let portfolioItems = [...this.state.portfolio];
+    let portfolioItem = portfolioItems[0];
+    portfolioItem.quantity = 200;
+    portfolioItems[0] = portfolioItem;
+    this.setState({portfolioItems});
+    console.log(this.state.portfolio);
+    console.log(this.state.txnHistory);
   };
 
   render(){
