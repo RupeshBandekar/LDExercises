@@ -23,7 +23,14 @@ class PortfolioData extends React.Component{
   }
 }
 
-class Portfolio extends React.Component{  
+const PortfolioValue = (props) => (
+    <div>
+      <div>Portfolio value: </div>      
+      {props.portfolioData.length > 0 ? props.portfolioData.map(x => x.quantity * x.price).reduce((a,b) => a + b) : 0}
+    </div>  
+);
+
+class Portfolio extends React.Component{
   render(){
     return(
     <div>
@@ -43,6 +50,7 @@ class Portfolio extends React.Component{
         Current Price
       </div>
       {this.props.portfolio.map(portfolioData => <PortfolioData key={portfolioData.id} {...portfolioData}/>)}
+      <PortfolioValue portfolioData={this.props.portfolio} />
     </div>
     
     );
@@ -51,11 +59,15 @@ class Portfolio extends React.Component{
 
 
 class SendOrder extends React.Component{
-  state = {txnDate: "", txnType: "0", asset: "0", quantity: "", price: "", txnStatus: "", failureReason: "", errorMessage: ""};
+  state = {txnDate: "", txnType: "0", asset: "0", quantity: "", price: "", txnStatus: "", failureReason: ""};
   handleSendOrder = event => {
     event.preventDefault();
     this.props.onSubmit(this.state);
-    this.setState({txnDate: "", txnType: "0", asset: "0", quantity: "", price: "", txnStatus: "", failureReason: ""});
+    console.log("test");
+    // if(this.props.validationMessage === "")
+    // {
+      this.setState({txnDate: "", txnType: "0", asset: "0", quantity: "", price: "", txnStatus: "", failureReason: ""});
+    // }
   };
 
   acceptValidInput = (event) => {
@@ -206,6 +218,9 @@ class ValidationSummary extends React.Component {
 class App extends React.Component {
 
   state = {
+    // portfolio: [],
+    // txnHistory: [],
+    errorMessage: '',
     portfolio: [
       {asset: "GOOGL", quantity: 100, price: 200.00},
       {asset: "MO", quantity: 200, price: 150.00},
@@ -218,7 +233,7 @@ class App extends React.Component {
       {txnDate: "6/3/2019 2:22:30 PM", txnType: "S", asset: "GOOGL", quantity: 1005, price: 105.25, txnStatus: "F", failureReason: "Quantity for sell exceeds the quantity available"},
     ],
 
-    errorMessage: '',
+    
   };
 
   updatePortfolio = (orderData) => {
@@ -333,7 +348,6 @@ class App extends React.Component {
       this.addNewTxnHistory(orderData);
 
       if(orderData.txnStatus === "S") {
-        console.log(portfolioPosition);
         this.updatePortfolio(orderData);
       }
     }
@@ -343,7 +357,7 @@ class App extends React.Component {
     return (
       <div>        
         <Portfolio portfolio={this.state.portfolio}/>
-        <SendOrder onSubmit={this.validateOrder} onChange={this.resetErrorMessage}/>
+        <SendOrder onSubmit={this.validateOrder} onChange={this.resetErrorMessage} validationMessage={this.state.errorMessage}/>
         <ValidationSummary errorMessage={this.state.errorMessage}/>
         <TransactionHistory txnHistory={this.state.txnHistory}/>
       </div>
