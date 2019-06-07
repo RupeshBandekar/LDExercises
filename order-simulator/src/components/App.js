@@ -5,18 +5,18 @@ class PortfolioData extends React.Component{
   render(){
     const portfolioData = this.props;
     return(
-      <div>
-        <div className="portfolio-column">
+      <div className="rTableRow">
+        <div className="rTableCell">
           {portfolioData.asset}
         </div>
-        <div className="portfolio-column">
+        <div className="rTableCell">
           {portfolioData.quantity}
         </div>
-        <div className="portfolio-column">
-          {portfolioData.price}
+        <div className="rTableCell">
+          {new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(portfolioData.price)}
         </div>
-        <div className="portfolio-column">
-          {portfolioData.quantity * portfolioData.price}
+        <div className="rTableCell">
+          {new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(portfolioData.quantity * portfolioData.price)}
         </div>
       </div>
     );
@@ -24,33 +24,40 @@ class PortfolioData extends React.Component{
 }
 
 const PortfolioValue = (props) => (
-    <div>
-      <div>Portfolio value: </div>      
-      {props.portfolioData.length > 0 ? props.portfolioData.map(x => x.quantity * x.price).reduce((a,b) => a + b) : 0}
+    <div className="value">      
+      {new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(
+        props.portfolioData.length > 0 ? props.portfolioData.map(x => x.quantity * x.price).reduce((a,b) => a + b) : 0)}
     </div>  
 );
 
 class Portfolio extends React.Component{
   render(){
     return(
-    <div>
-      <div>
-      Portfolio:
+    <div className="portfolio-container">
+      <div className="portfolio">      
+        <div className="text">
+          Portfolio value :
+        </div>
+        <PortfolioValue portfolioData={this.props.portfolio} />
+      </div> 
+      <div className="rTable">
+        <div className="rTableRow">
+          <div className="rTableHead">
+            Security
+          </div>
+          <div className="rTableHead">
+            Quantity
+          </div>
+          <div className="rTableHead">
+            Buy Price
+          </div>
+          <div className="rTableHead">
+            Total Price
+          </div>
+        </div>
+        {this.props.portfolio.map(portfolioData => <PortfolioData key={portfolioData.id} {...portfolioData}/>)}
       </div>
-      <div className="portfolio-column">
-        Security
-      </div>
-      <div className="portfolio-column">
-        Quantity
-      </div>
-      <div className="portfolio-column">
-        Buy Price
-      </div>
-      <div className="portfolio-column">
-        Current Price
-      </div>
-      {this.props.portfolio.map(portfolioData => <PortfolioData key={portfolioData.id} {...portfolioData}/>)}
-      <PortfolioValue portfolioData={this.props.portfolio} />
+      
     </div>
     
     );
@@ -63,11 +70,8 @@ class SendOrder extends React.Component{
   handleSendOrder = event => {
     event.preventDefault();
     this.props.onSubmit(this.state);
-    console.log("test");
-    // if(this.props.validationMessage === "")
-    // {
-      this.setState({txnDate: "", txnType: "0", asset: "0", quantity: "", price: "", txnStatus: "", failureReason: ""});
-    // }
+    
+    this.setState({txnDate: "", txnType: "0", asset: "0", quantity: "", price: "", txnStatus: "", failureReason: ""});
   };
 
   acceptValidInput = (event) => {
@@ -96,47 +100,52 @@ class SendOrder extends React.Component{
   render(){
     return(
       <form onSubmit={this.handleSendOrder}>
-        <div>
-          Send Order:
+        <div className="sendOrder">
+          <div className="text">
+            Send Order
+          </div>
         </div>
-        <div>
-          <div className="sendorder-column">
-            <select id="ddlAction" value={this.state.txnType} 
-            onChange={event => {this.setState({txnType: event.target.value}); this.props.onChange();}} required>
-              <option value="">Action</option>
-              <option value="B">Buy</option>
-              <option value="S">Sell</option>
-            </select>          
-          </div>
-          <div className="sendorder-column">
-          <input id="txtQuantity" type="text" value={this.state.quantity} placeholder="Quantity" 
-          onChange={event => {this.acceptValidInput(event); this.props.onChange();}} required></input>
-          </div>
-          <div className="sendorder-column">
-            Asset:
-            <select id="ddlAsset" value={this.state.asset} onChange={event => {this.setState({asset: event.target.value}); this.props.onChange();}} required>
-              <option value="">Select</option>
-              <option value="GOOGL" title="	Alphabet Inc Class A">GOOGL</option>
-              <option value="MO" title="Altria Group Inc">MO</option>
-              <option value="AMZN" title="Amazon.com Inc.">AMZN</option>
-              <option value="AAPL" title="Apple Inc.">AAPL</option>
-              <option value="BLK" title="BlackRock">BLK</option>
-              <option value="BA" title="Boeing Company">BA</option>
-              <option value="CSCO" title="Cisco Systems">CSCO</option>
-              <option value="CTXS" title="Citrix Systems">CTXS</option>
-              <option value="KO" title="Coca-Cola Company">KO</option>
-              <option value="CTSH" title="Cognizant Technology Solutions">CTSH</option>
-            </select>          
-          </div>
-          <div className="sendorder-column">
-            <input id="txtPrice" type="text" placeholder="Price" value={this.state.price} 
+        <div className="sendOrder-container">
+          <div className="sendOrder-panel">
+            <div>
+              <select id="ddlAction" value={this.state.txnType} 
+              onChange={event => {this.setState({txnType: event.target.value}); this.props.onChange();}} required>
+                <option value="">Action</option>
+                <option value="B">Buy</option>
+                <option value="S">Sell</option>
+              </select>          
+            </div>
+            <div>
+            <label>Quantity:</label>
+            <input id="txtQuantity" type="text" value={this.state.quantity} placeholder="0" 
             onChange={event => {this.acceptValidInput(event); this.props.onChange();}} required></input>
+            </div>
+            <div>
+              <label>Asset:</label>
+              <select id="ddlAsset" value={this.state.asset} onChange={event => {this.setState({asset: event.target.value}); this.props.onChange();}} required>
+                <option value="">Select</option>
+                <option value="GOOGL" title="	Alphabet Inc Class A">GOOGL</option>
+                <option value="MO" title="Altria Group Inc">MO</option>
+                <option value="AMZN" title="Amazon.com Inc.">AMZN</option>
+                <option value="AAPL" title="Apple Inc.">AAPL</option>
+                <option value="BLK" title="BlackRock">BLK</option>
+                <option value="BA" title="Boeing Company">BA</option>
+                <option value="CSCO" title="Cisco Systems">CSCO</option>
+                <option value="CTXS" title="Citrix Systems">CTXS</option>
+                <option value="KO" title="Coca-Cola Company">KO</option>
+                <option value="CTSH" title="Cognizant Technology Solutions">CTSH</option>
+              </select>          
+            </div>
+            <div>
+              <label>Price:</label>
+              <input id="txtPrice" type="text" placeholder="0.00" value={this.state.price} 
+              onChange={event => {this.acceptValidInput(event); this.props.onChange();}} required></input>
+            </div>
+          </div>
+          <div className="btn">
+            <button className="button">Send Order</button>
           </div>
         </div>
-        <div>
-          <button>Send Order</button>          
-        </div>
-        <div>{this.state.errorMessage}</div>
       </form>
     );
   };
@@ -146,26 +155,30 @@ class TransactionData extends React.Component{
   render(){
     const txnHistoryData = this.props;
     return(
-      <div>        
-        <div className="transaction-column">
-        {txnHistoryData.txnDate}
+      <div className="rTableRow">
+        <div className="rTableCell">
+          {new Intl.DateTimeFormat('en-US', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12: false}).format(txnHistoryData.txnDate)}
+          {/* {txnHistoryData.txnDate} */}
         </div>
-        <div className="transaction-column">
+        <div className="rTableCell">
           {txnHistoryData.txnType}
         </div>
-        <div className="transaction-column">
+        <div className="rTableCell">
           {txnHistoryData.asset}
         </div>
-        <div className="transaction-column">
+        <div className="rTableCell">
           {txnHistoryData.quantity}
         </div>
-        <div className="transaction-column">
-          {txnHistoryData.price}
+        <div className="rTableCell">
+          {new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(txnHistoryData.price)}
+        </div>
+        <div className="rTableCell">
+          {new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(txnHistoryData.quantity * txnHistoryData.price)}
         </div>        
-        <div className="transaction-column">
+        <div className={txnHistoryData.txnStatus === "Success" ? "rTableCellGreen" : "rTableCellRed"}>
           {txnHistoryData.txnStatus}
         </div>
-        <div className="transaction-column">
+        <div className="rTableCell">
           {txnHistoryData.failureReason}
         </div>
       </div>
@@ -177,40 +190,51 @@ class TransactionHistory extends React.Component{
   render(){
     return(
       <div>
-        <div>
-          Transaction History:
+        <div className="txnHistory">
+          <div className="text">
+            Transaction History
+          </div>
         </div>
-        <div className="transaction-column">
-          Txn Time
+        <div className="test">
+        <div className="rTable">
+          <div className="rTableRow">
+            <div className="rTableHead">
+              Txn Time
+            </div>
+            <div className="rTableHead">
+              Txn Type
+            </div>
+            <div className="rTableHead">
+              Asset
+            </div>
+            <div className="rTableHead">
+              Quantity
+            </div>   
+            <div className="rTableHead">
+              Price
+            </div>        
+            <div className="rTableHead">
+              Txn Amount
+            </div>
+            <div className="rTableHead">
+              Txn Status
+            </div>
+            <div className="rTableHead">
+              Remarks
+            </div>
+          </div>
+          {this.props.txnHistory.map(txnData => <TransactionData key={txnData.id} {...txnData}/>)}
         </div>
-        <div className="transaction-column">
-          Txn Type
         </div>
-        <div className="transaction-column">
-          Asset
-        </div>
-        <div className="transaction-column">
-          Quantity
-        </div>        
-        <div className="transaction-column">
-          Txn Amount
-        </div>
-        <div className="transaction-column">
-          Txn Status
-        </div>
-        <div className="transaction-column">
-          Remarks
-        </div>
-        {this.props.txnHistory.map(txnData => <TransactionData key={txnData.id} {...txnData}/>)}
       </div>
     );
   };
 }
 
 class ValidationSummary extends React.Component {  
-  render(){
-    return(
-      <div>{this.props.errorMessage}</div>
+  render(){    
+    return(      
+      <div className={this.props.styleName}>{this.props.errorMessage}</div>
     );
   };
 }
@@ -218,20 +242,20 @@ class ValidationSummary extends React.Component {
 class App extends React.Component {
 
   state = {
-    // portfolio: [],
-    // txnHistory: [],
+    portfolio: [],
+    txnHistory: [],
     errorMessage: '',
-    portfolio: [
-      {asset: "GOOGL", quantity: 100, price: 200.00},
-      {asset: "MO", quantity: 200, price: 150.00},
-      {asset: "AMZN", quantity: 250, price: 250},
-    ],
+    // portfolio: [
+    //   {asset: "GOOGL", quantity: 100, price: 200.00},
+    //   {asset: "MO", quantity: 200, price: 150.00},
+    //   {asset: "AMZN", quantity: 250, price: 250},
+    // ],
 
-    txnHistory: [
-      {txnDate: "6/3/2019 2:19:15 PM", txnType: "B", asset: "GOOGL", quantity: 500, price: 105.25, txnStatus: "S", failureReason: ""},
-      {txnDate: "6/3/2019 2:20:55 PM", txnType: "B", asset: "GOOGL", quantity: 500, price: 105.25, txnStatus: "S", failureReason: ""},
-      {txnDate: "6/3/2019 2:22:30 PM", txnType: "S", asset: "GOOGL", quantity: 1005, price: 105.25, txnStatus: "F", failureReason: "Quantity for sell exceeds the quantity available"},
-    ],
+    // txnHistory: [
+    //   {txnDate: "6/3/2019 14:19:15", txnType: "B", asset: "GOOGL", quantity: 500, price: 105.25, txnStatus: "Success", failureReason: ""},
+    //   {txnDate: "6/3/2019 14:20:55", txnType: "B", asset: "GOOGL", quantity: 500, price: 105.25, txnStatus: "Success", failureReason: ""},
+    //   {txnDate: "6/3/2019 14:22:30", txnType: "S", asset: "GOOGL", quantity: 1005, price: 105.25, txnStatus: "Fail", failureReason: "Quantity for sell exceeds the quantity available"},      
+    // ],
 
     
   };
@@ -249,9 +273,11 @@ class App extends React.Component {
       {
         if(portfolioQuantity - orderQuantity === 0)
         {
+          console.log("zero");
           //removing asset from portfolio
           const splicedPortfolio = this.state.portfolio.splice(index, 1);
-          this.setState({splicedPortfolio});
+          //this.setState({splicedPortfolio});
+          this.setState({splicedPortfolio})
         }
         else {
           portfolioQuantity = portfolioQuantity - orderQuantity;
@@ -266,7 +292,7 @@ class App extends React.Component {
       {        
         copyPortfolioAsset.quantity = portfolioQuantity;
         copyPortfolio[index] = copyPortfolioAsset;
-        this.setState({copyPortfolio});
+        this.setState({portfolio: copyPortfolio});
       }
     }
     else {
@@ -278,15 +304,17 @@ class App extends React.Component {
 
   addNewTxnHistory = (txnData) => {
     var today = new Date();
-    var date = today.getDate() + '-' + (today.getMonth()+1) + '-' + today.getFullYear();
-    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-    var dateTime = date + ' ' + time;
+    // var date = today.getDate() + '-' + (today.getMonth()+1) + '-' + today.getFullYear();
+    // var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    // var dateTime = date + ' ' + time;
 
-    txnData.txnDate = dateTime;
+    txnData.txnDate = today;
 
-    this.setState(prevTxn => ({
-      txnHistory: [...prevTxn.txnHistory, txnData],
-    }));
+    // this.setState(prevTxn => ({
+    //   txnHistory: [...prevTxn.txnHistory, txnData],
+    // }));
+    const prevtxnHistory = this.state.txnHistory.concat(txnData);
+    this.setState({txnHistory: prevtxnHistory}); 
   };
 
   validateQuantity = (orderQuantity) => {    
@@ -313,11 +341,11 @@ class App extends React.Component {
     //https://stackoverflow.com/questions/29537299/react-how-do-i-update-state-item1-on-setstate-with-jsfiddle    
     
     if(!(this.validatePrice(orderData.price))) {
-      this.setState({errorMessage: 'Invalid price'});
+      this.setState({errorMessage: 'Alert: Invalid price'});
     }
     else {  
       const portfolioPosition = this.state.portfolio.filter(x => x.asset === orderData.asset);
-      orderData.txnStatus = "S";
+      orderData.txnStatus = "Success";
 
       if(portfolioPosition.length > 0)
       {
@@ -331,35 +359,55 @@ class App extends React.Component {
           //if asset is present in portfolio
           if(portfolioPosition[0].quantity < orderData.quantity)
           {
-            orderData.txnStatus = "F";
+            orderData.txnStatus = "Fail";
             orderData.failureReason = "Quantity for sell exceeds the portfolio quantity";
-            this.setState({errorMessage: 'Quantity for sell exceeds the portfolio quantity'});
+            this.setState({errorMessage: 'Alert: Quantity for sell exceeds the portfolio quantity'});
           }
         }
         else
         {
           //asset is not present in portfolio
-          orderData.txnStatus = "F";
+          orderData.txnStatus = "Fail";
           orderData.failureReason = "Asset for sell does not exist in portfolio";
-          this.setState({errorMessage: 'Asset for sell does not exist in portfolio'});
+          this.setState({errorMessage: 'Alert: Asset for sell does not exist in portfolio'});
         }
       }
       
       this.addNewTxnHistory(orderData);
 
-      if(orderData.txnStatus === "S") {
+      if(orderData.txnStatus === "Success") {
         this.updatePortfolio(orderData);
+        this.setState({errorMessage: 'Order placed successfully!'});
       }
     }
   };
 
   render(){
+    let alertMessage;
+    if(this.state.errorMessage !== "")
+    {
+      if(this.state.errorMessage.substring(0, 5) === "Alert") {        
+        alertMessage = <ValidationSummary errorMessage={this.state.errorMessage} styleName={"alert"}/>
+      }
+      else {
+        alertMessage = <ValidationSummary errorMessage={this.state.errorMessage} styleName={"alert-success"}/>
+      }
+    }
     return (
-      <div>        
-        <Portfolio portfolio={this.state.portfolio}/>
-        <SendOrder onSubmit={this.validateOrder} onChange={this.resetErrorMessage} validationMessage={this.state.errorMessage}/>
-        <ValidationSummary errorMessage={this.state.errorMessage}/>
-        <TransactionHistory txnHistory={this.state.txnHistory}/>
+      <div>
+        <div className="split left">
+          <div className="aligned">
+            <Portfolio portfolio={this.state.portfolio}/>        
+            <SendOrder onSubmit={this.validateOrder} onChange={this.resetErrorMessage} validationMessage={this.state.errorMessage}/>
+            {alertMessage}
+          </div>
+        </div>
+        <div className="split aligned vl"></div>
+        <div className="split right">
+          <div className="aligned">
+            <TransactionHistory txnHistory={this.state.txnHistory}/>
+          </div>
+        </div>
       </div>
     );
   }

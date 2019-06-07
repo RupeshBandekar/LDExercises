@@ -10,3 +10,230 @@
   display: inline;
   border-style: ridge;
 }
+.sendOrder {
+  Width: 100%; 
+  font-size: 30px; 
+  background-color: navy; 
+  color: white;
+  margin: 0 0 3px 0;
+}
+.sendOrder .text {
+  display: inline-block;
+  padding: 13px;
+}
+.sendOrder-container {
+  Width: 100%;
+  height: 120px;
+  background-color: #ddd;
+  border-top: 5px solid;
+  border-bottom: 5px solid;
+  border-color: grey;
+}
+.sendOrder-panel {
+  Width: 100%;  
+}
+.sendOrder-panel div {  
+  margin: 11px 0px 7px 15px; 
+  display: inline-block;
+}
+.sendOrder-panel input {
+  width: 100px;
+  height: 23px;
+}
+.sendOrder-panel select {
+  width: 100px;
+  height: 30px;
+}
+.sendOrder-panel label {
+  font-size: 17px;
+  padding: 5px;
+}
+.btn {
+  margin: 7px 15px;
+}
+.btn button {
+  background-color: grey;
+  border: none;
+  color: white;
+  padding: 16px;
+  text-align: center;
+  font-size: 16px;
+  margin: 4px 2px;
+  transition: 0.3s;
+}
+.btn button:hover {background-color: #f4511e;}
+
+.portfolio-container {
+  height: 550px;;
+}
+.portfolio {
+  Width: 100%; 
+  font-size: 30px; 
+  background-color: navy; 
+  color: white;
+  margin: 0 0 10px 0;
+}
+.portfolio .text{  
+  display: inline-block;
+  padding: 13px;
+}
+.portfolio .value{
+  display: inline;
+}
+
+.txnHistory {
+  Width: 100%; 
+  font-size: 30px; 
+  background-color: navy; 
+  color: white;
+  margin: 0 0 10px 0;
+}
+.txnHistory .text {
+  display: inline-block;
+  padding: 13px;
+}
+/* displaying divs as table */
+.test{
+  height: 500px;
+}
+.rTable {
+  display: table;
+  width: 100%;
+}
+.rTableRow {
+  display: table-row;
+}
+
+.rTable:nth-child(even){background-color: #f2f2f2;}
+
+.rTable .rTableRow:hover {background-color: #ddd;}
+
+.rTableHeading {
+  display: table-header-group;
+  background-color: #ddd;
+}
+.rTableCell {
+  display: table-cell;
+  padding: 3px 10px;
+  border: 1px solid #999999;
+}
+.rTableCellRed {
+  display: table-cell;
+  padding: 3px 10px;
+  border: 1px solid #999999;
+  color: red;
+  font-weight: bold
+}
+.rTableCellGreen {
+  display: table-cell;
+  padding: 3px 10px;
+  border: 1px solid #999999;
+  color:green;
+  font-weight: bold
+}
+.rTableHead {
+  display: table-cell;
+  padding: 3px 10px;
+  border: 1px solid #999999;
+  background-color: #4CAF50;
+  color: white;
+  font-weight: bold
+}
+.rTableHeading {
+  display: table-header-group;
+  background-color: #ddd;
+  font-weight: bold;
+}
+.rTableFoot {
+  display: table-footer-group;
+  font-weight: bold;
+  background-color: #ddd;
+}
+.rTableBody {
+  display: table-row-group;
+}
+
+
+
+/* displaying divs as table */
+
+/* Split the screen in half */
+.split {
+  height: 100%;
+  /* width: 50%; */
+  position: fixed;
+  /* z-index: 1; */
+  top: 0;
+  overflow-x: hidden;
+  padding-top: 20px;
+}
+
+/* Control the left side */
+.left {
+  width: 40%;
+  left: 0;
+  /* background-color: #111; */  
+}
+
+/* Control the right side */
+.right {
+  width: 60%;
+  right: 0;
+  /* background-color: red; */
+}
+
+/* If you want the content centered horizontally and vertically */
+.aligned {
+  position: absolute;
+  top: 5%;
+  left: 5%;
+  right: 5%;
+}
+
+/* Style the image inside the centered container, if needed */
+.centered img {
+  width: 150px;
+  border-radius: 50%;
+}
+
+/* The alert message box */
+.alert {
+  padding: 20px;
+  background-color: #f44336; /* Red */
+  color: white;
+  margin-bottom: 15px;
+}
+
+.alert-success{
+  padding: 20px;
+  background-color: #1a810ca9; /* Green */
+  color: white;
+  margin-bottom: 15px;
+}
+
+/* The close button */
+.closebtn {
+  margin-left: 15px;
+  color: white;
+  font-weight: bold;
+  float: right;
+  font-size: 22px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+/* When moving the mouse over the close button */
+.closebtn:hover {
+  color: black;
+}
+
+/*verical line*/
+.vl {
+  border-left: 3px solid #ddd;
+  height: 80%;
+  position: absolute;
+  left: 40%;
+  margin-left: -3px;
+  margin-bottom: 100px;
+}
