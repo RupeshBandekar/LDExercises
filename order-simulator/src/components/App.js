@@ -7,16 +7,16 @@ class PortfolioData extends React.Component{
     return(
       <div className="rTableRow">
         <div className="rTableCell">
-          {portfolioData.asset}
+          {portfolioData.pAsset}
         </div>
         <div className="rTableCell">
-          {portfolioData.quantity}
+          {portfolioData.pQuantity}
         </div>
         <div className="rTableCell">
-          {new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(portfolioData.price)}
+          {new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(portfolioData.pPrice)}
         </div>
         <div className="rTableCell">
-          {new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(portfolioData.quantity * portfolioData.price)}
+          {new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(portfolioData.pQuantity * portfolioData.pPrice)}
         </div>
       </div>
     );
@@ -26,7 +26,7 @@ class PortfolioData extends React.Component{
 const PortfolioValue = (props) => (
     <div className="value">      
       {new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(
-        props.portfolioData.length > 0 ? props.portfolioData.map(x => x.quantity * x.price).reduce((a,b) => a + b) : 0)}
+        props.portfolioData.length > 0 ? props.portfolioData.map(x => x.pQuantity * x.pPrice).reduce((a,b) => a + b) : 0)}
     </div>  
 );
 
@@ -67,6 +67,14 @@ class Portfolio extends React.Component{
 
 class SendOrder extends React.Component{
   state = {txnDate: "", txnType: "0", asset: "0", quantity: "", price: "", txnStatus: "", failureReason: ""};
+  // state = {
+  //   txnHistory: [
+  //     {txnDate: "", txnType: "", asset: "", quantity: "", price: "", txnStatus: "", failureReason: ""},
+  //   ],
+  //   portfolio: [
+  //     {pAsset: "", pQuantity: "", pPrice: ""},
+  //   ],
+  // };
   handleSendOrder = event => {
     event.preventDefault();
     this.props.onSubmit(this.state);
@@ -79,7 +87,7 @@ class SendOrder extends React.Component{
     {
       case "txtQuantity": 
         {
-          const re = /^[1-9]+\d*$/;
+          const re = /^[1-9]+\d*$/;          
           if (event.target.value === '' || re.test(event.target.value)) {
             this.setState({quantity: event.target.value});
           }
@@ -262,21 +270,19 @@ class App extends React.Component {
 
   updatePortfolio = (orderData) => {
     
-    const index = this.state.portfolio.findIndex(x => x.asset === orderData.asset);
+    const index = this.state.portfolio.findIndex(x => x.pAsset === orderData.asset);
     if(index > -1)
     {      
       const copyPortfolio = [...this.state.portfolio];
       let copyPortfolioAsset = copyPortfolio[index];
-      let portfolioQuantity = parseInt(copyPortfolioAsset.quantity);
+      let portfolioQuantity = parseInt(copyPortfolioAsset.pQuantity);
       let orderQuantity = parseInt(orderData.quantity);
       if(orderData.txnType === "S")
       {
         if(portfolioQuantity - orderQuantity === 0)
         {
-          console.log("zero");
           //removing asset from portfolio
           const splicedPortfolio = this.state.portfolio.splice(index, 1);
-          //this.setState({splicedPortfolio});
           this.setState({splicedPortfolio})
         }
         else {
@@ -288,17 +294,21 @@ class App extends React.Component {
         portfolioQuantity = portfolioQuantity + orderQuantity;
       }
       
-      if(parseInt(copyPortfolioAsset.quantity) !== portfolioQuantity)
+      if(parseInt(copyPortfolioAsset.pQuantity) !== portfolioQuantity)
       {        
-        copyPortfolioAsset.quantity = portfolioQuantity;
+        copyPortfolioAsset.pQuantity = portfolioQuantity;
         copyPortfolio[index] = copyPortfolioAsset;
         this.setState({portfolio: copyPortfolio});
       }
     }
     else {
-      this.setState(prevPortfolio => ({
-        portfolio: [...prevPortfolio.portfolio, orderData],
-      }));
+      let tempPortfolio = {pAsset: orderData.asset, pQuantity: orderData.quantity, pPrice: orderData.price};
+      
+      // this.setState(prevPortfolio => ({
+      //   portfolio: [...prevPortfolio.portfolio, tempPortfolio],
+      // }));
+      this.setState(state => 
+        state.portfolio.push(tempPortfolio));
     }
   };
 
@@ -310,11 +320,9 @@ class App extends React.Component {
 
     txnData.txnDate = today;
 
-    // this.setState(prevTxn => ({
-    //   txnHistory: [...prevTxn.txnHistory, txnData],
-    // }));
-    const prevtxnHistory = this.state.txnHistory.concat(txnData);
-    this.setState({txnHistory: prevtxnHistory}); 
+    this.setState(prevTxn => ({
+      txnHistory: [...prevTxn.txnHistory, txnData],
+    }));
   };
 
   validateQuantity = (orderQuantity) => {    
@@ -344,12 +352,13 @@ class App extends React.Component {
       this.setState({errorMessage: 'Alert: Invalid price'});
     }
     else {  
-      const portfolioPosition = this.state.portfolio.filter(x => x.asset === orderData.asset);
+      const portfolioPosition = this.state.portfolio.filter(x => x.pAsset === orderData.asset);
+      
       orderData.txnStatus = "Success";
 
       if(portfolioPosition.length > 0)
       {
-        orderData.price = portfolioPosition[0].price;
+        orderData.price = portfolioPosition[0].pPrice;
       }
 
       if(orderData.txnType === "S")
@@ -357,7 +366,7 @@ class App extends React.Component {
         if(portfolioPosition.length > 0)
         {
           //if asset is present in portfolio
-          if(portfolioPosition[0].quantity < orderData.quantity)
+          if(portfolioPosition[0].pQuantity < orderData.quantity)
           {
             orderData.txnStatus = "Fail";
             orderData.failureReason = "Quantity for sell exceeds the portfolio quantity";
