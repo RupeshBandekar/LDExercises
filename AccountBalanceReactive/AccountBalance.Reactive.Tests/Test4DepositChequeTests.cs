@@ -85,17 +85,76 @@
         }
 
         [Fact]
-        public void Can_throw_exception_if_cash_withdrawn_zero_balance_on_cheque_deposit_day()
+        public async Task Can_throw_exception_if_cash_withdrawn_zero_balance_on_cheque_deposit_day()
         {
-            decimal fund = 1000.00M;
-            DateTime depositDate = DateTime.Today;
+            var fund = 1000.00M;
+            var depositDate = DateTime.Today;
+            var clearanceBusinessDay = depositDate.AddDays(1);
+
+            var accountCreated = new AccountCreated(CorrelatedMessage.NewRoot())
+            {
+                AccountId = _accountId,
+                AccountHolderName = _accountHolderName
+            };
+
+            var chequeDeposited = new ChequeDeposited(CorrelatedMessage.NewRoot())
+            {
+                AccountId = _accountId,
+                Fund = fund,
+                DepositDate = depositDate,
+                ClearanceBusinessDay = clearanceBusinessDay
+            };
+
+            var withdrawCash = new WithdrawCash()
+            {
+                AccountId = _accountId,
+                Fund = fund
+            };
+
+            var givens = new Event[] { accountCreated, chequeDeposited };
+
+            await _runner.Run(
+                def => def.Given(givens).When(withdrawCash)
+                    .Throws(new OperationCanceledException("Insufficient fund")));
         }
 
         [Fact]
-        public void Can_withdraw_available_fund_from_cleared_cheque()
+        public async Task Can_withdraw_available_fund_from_cleared_cheque()
         {
             decimal fund = 1000.00M;
             DateTime depositDate = DateTime.Today.AddDays(-1);
+            var clearanceBusinessDay = DateTime.Today;
+
+            var accountCreated = new AccountCreated(CorrelatedMessage.NewRoot())
+            {
+                AccountId = _accountId,
+                AccountHolderName = _accountHolderName
+            };
+
+            var chequeDeposited = new ChequeDeposited(CorrelatedMessage.NewRoot())
+            {
+                AccountId = _accountId,
+                Fund = fund,
+                DepositDate = depositDate,
+                ClearanceBusinessDay = clearanceBusinessDay
+            };
+
+            var withdrawCash = new WithdrawCash()
+            {
+                AccountId = _accountId,
+                Fund = fund
+            };
+
+            var cashWithdrawn = new CashWithdrawn(withdrawCash)
+            {
+                AccountId = withdrawCash.AccountId,
+                Fund = withdrawCash.Fund
+            };
+
+            var givens = new Event[] { accountCreated, chequeDeposited };
+
+            await _runner.Run(
+                def => def.Given(givens).When(withdrawCash).Then(cashWithdrawn));
         }
 
     }
