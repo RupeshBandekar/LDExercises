@@ -24,6 +24,13 @@ namespace AccountBalance.UI
             services.AddSingleton(typeof(EventStoreFixture), fixture);
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
+            services.AddCors(
+                o => o.AddPolicy("MyPolicy", builder => {
+                    builder.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                }));
+
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
@@ -45,6 +52,7 @@ namespace AccountBalance.UI
                 app.UseHsts();
             }
 
+            app.UseCors("MyPolicy");
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();

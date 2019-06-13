@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import {NewAccount} from './NewAccount';
 
 export class Accounts extends Component {
     static displayName = Accounts.name;
@@ -26,22 +25,24 @@ export class Accounts extends Component {
   
     static renderAccountsTable (accounts) {
       return (
-        <table className='table table-striped'>
-          <thead>
-            <tr>
-              <th>Account Id</th>
-              <th>Name</th>
-            </tr>
-          </thead>
-          <tbody>
-            {accounts.map(account =>
-              <tr key={account.accountId}>
-                <td>{account.accountId}</td>
-                <td>{account.accountHolderName}</td>
+        <div>
+          <table className='table table-striped'>
+            <thead>
+              <tr>
+                <th>Account Id</th>
+                <th>Name</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {accounts.map(account =>
+                <tr key={account.accountId}>
+                  <td><a>{account.accountId}</a></td>
+                  <td><a>{account.accountHolderName}</a></td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       );
     }
   
@@ -52,8 +53,6 @@ export class Accounts extends Component {
   
       return (
         <div>
-          <h1>Account Balance</h1>
-          <NewAccount />
           {contents}
         </div>
       );
