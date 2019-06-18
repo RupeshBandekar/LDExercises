@@ -32,11 +32,17 @@ export class WireTransfer extends Component {
             return;
         }
 
+        if(this.state.date < new Date())
+        {
+            this.setState({message: <p style={{color: 'red'}}>Please enter valid date</p>});
+            return;
+        }
+
         if(this.state.fund === '' || this.state.fund <= 0)
         {
             this.setState({message: <p style={{color: 'red'}}>Please enter amount</p>});
             return;
-        }
+        }        
 
         if(this.props.account[0].accountState === 1)
         {

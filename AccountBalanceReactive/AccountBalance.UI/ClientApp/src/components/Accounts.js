@@ -16,7 +16,7 @@ export class Accounts extends Component {
 
     componentDidMount() { 
         this.renderAccountsTable(this.state.accounts);
-        setInterval(() => this.fetchAccounts(), 3000);
+        setInterval(() => this.fetchAccounts(), 2000);
     }
 
     fetchAccounts()
