@@ -21,20 +21,22 @@ export class Accounts extends Component {
 
     fetchAccounts()
     {
-      console.log("fetch accounts called");
+      //console.log("fetch accounts called");
       this.refreshAccountsData();      
     }
 
-    refreshAccountsData()
+    refreshAccountsData = () =>
     {
-      fetch('api/Home/GetAccounts')
+      var data = fetch('api/Home/GetAccounts')
       .then(response => response.json())
       .then(data => {
-          this.setState({ accounts: data, loading: false }, () => this.updateSelectedAccount(data));
+          this.setState({ accounts: data, loading: false }, () => this.updateSelectedAccount(data));          
+          return data;
       });
+      return data;
     }
 
-    updateSelectedAccount = (data) => {
+    updateSelectedAccount = (data) => { 
       if(data.length > 0 && this.state.selectedAccount.length > 0)
       {
         var account = data.filter(x => x.accountId == this.state.selectedAccount[0].accountId);
@@ -54,7 +56,7 @@ export class Accounts extends Component {
       {
         this.setState({selectedAccount: account});
       }
-      console.log("show account info called");
+      //console.log("show account info called");
       //this.props.captureAccountId(accountId);
 
     }
@@ -87,7 +89,7 @@ export class Accounts extends Component {
     }
   
     render () {
-      console.log(this.state.selectedAccount);
+      //console.log(this.state.selectedAccount);
       let contents = this.state.loading
         ? <p><em>Loading...</em></p>
         : this.renderAccountsTable(this.state.accounts);
@@ -97,7 +99,7 @@ export class Accounts extends Component {
           {contents}
           <div id="accountInfo" style={{display: 'none'}}>
             {/* <a onClick={() => this.props.showAccountsPanel(true)}>Back</a> */}
-            <AccountInfo account={this.state.selectedAccount} showAccountsPanel={this.props.showAccountsPanel}/>
+            <AccountInfo account={this.state.selectedAccount} showAccountsPanel={this.props.showAccountsPanel} refreshAccountsData={this.refreshAccountsData.bind(this)}/>
           </div>
         </div>
       );

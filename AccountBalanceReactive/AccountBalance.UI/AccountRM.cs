@@ -79,6 +79,7 @@
 
         public void Handle(ChequeDeposited message)
         {
+            Account = lstAccount.FirstOrDefault(x => x.AccountId == message.AccountId);
             if (Account == null)
             {
                 throw new ArgumentException($"Account id({message.AccountId}) not found.");
@@ -93,26 +94,36 @@
                      DateTime.Now.TimeOfDay >= Convert.ToDateTime("09:00:00 AM").TimeOfDay)
             {
                 Account.AvailableFund = Account.AvailableFund + message.Fund;
-                if (Account.AccountState == AccountState.Blocked) Account.AccountState = AccountState.Unblocked;
+                if (Account.AccountState == AccountState.Blocked)
+                {
+                    Account.AccountState = AccountState.Unblocked;
+                    Account.ReasonForAccountBlock = "";
+                }
             }
             //UpdateAccountList(Account);
         }
 
         public void Handle(CashDeposited message)
         {
+            Account = lstAccount.FirstOrDefault(x => x.AccountId == message.AccountId);
             if (Account == null)
             {
                 throw new ArgumentException($"Account id({message.AccountId}) not found.");
             }
 
             Account.AvailableFund = Account.AvailableFund + message.Fund;
-            if (Account.AccountState == AccountState.Blocked) Account.AccountState = AccountState.Unblocked;
+            if (Account.AccountState == AccountState.Blocked)
+            {
+                Account.AccountState = AccountState.Unblocked;
+                Account.ReasonForAccountBlock = "";
+            }
 
             //UpdateAccountList(Account);
         }
 
         public void Handle(CashWithdrawn message)
         {
+            Account = lstAccount.FirstOrDefault(x => x.AccountId == message.AccountId);
             if (Account == null)
             {
                 throw new ArgumentException($"Account id({message.AccountId}) not found.");
@@ -125,18 +136,19 @@
 
         public void Handle(WireTransferred message)
         {
+            Account = lstAccount.FirstOrDefault(x => x.AccountId == message.AccountId);
             if (Account == null)
             {
                 throw new ArgumentException($"Account id({message.AccountId}) not found.");
             }
 
             Account.AvailableFund = Account.AvailableFund - message.Fund;
-
             //UpdateAccountList(Account);
         }
 
         public void Handle(AccountBlocked message)
         {
+            Account = lstAccount.FirstOrDefault(x => x.AccountId == message.AccountId);
             if (Account == null)
             {
                 throw new ArgumentException($"Account id({message.AccountId}) not found.");
@@ -160,14 +172,16 @@
         public string AccountHolderName { get; set; }
         public decimal OverdraftLimit { get; set; }
         public decimal DailyWireTransferLimit { get; set; }
+        //public decimal DailyWireTransferLimitUtilization { get; set; }
         public decimal AvailableFund { get; set; }
         //public decimal ChequeDepositFund { get; set; }
-        //public DateTime DepositDate { get; set; }
+        public DateTime DepositDate { get; set; }
+        public decimal Fund { get; set; }
         //public DateTime ClearanceBusinessDay { get; set; }
         //public decimal CashDepositFund { get; set; }
         //public decimal CashWithdrawnFund { get; set; }
         //public decimal WireTransferFund { get; set; }
-        //public DateTime WireTransferDate { get; set; }
+        public DateTime WireTransferDate { get; set; }
         public string ReasonForAccountBlock { get; set; }
         public AccountState AccountState { get; set; }
     }

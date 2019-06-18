@@ -120,5 +120,115 @@ namespace AccountBalance.UI.Controllers
                 return JsonConvert.SerializeObject($"Daily wire transfer limit set successfully");
             }
         }
+        [HttpPost("[action]")]
+        public async Task<string> DepositCheque()
+        {
+            using (StreamReader reader = new StreamReader(Request.Body))
+            {
+                var reqData = await reader.ReadToEndAsync();
+                var account = new List<Account> { JsonConvert.DeserializeObject<Account>(reqData) };
+
+                var commandBus = new Dispatcher(
+                    name: "Command Bus",
+                    watchSlowMsg: false,
+                    slowMsgThreshold: TimeSpan.FromSeconds(100),
+                    slowCmdThreshold: TimeSpan.FromSeconds(100));
+
+                new AccountCommandHandler(_fixture.Repository, commandBus);
+
+                var cmd = new DepositCheque()
+                {
+                    AccountId = account[0].AccountId,
+                    DepositDate = account[0].DepositDate,
+                    Fund = account[0].Fund
+                };
+
+                commandBus.Fire(cmd);
+
+                return JsonConvert.SerializeObject($"Cheque deposited successfully");
+            }
+        }
+        [HttpPost("[action]")]
+        public async Task<string> DepositCash()
+        {
+            using (StreamReader reader = new StreamReader(Request.Body))
+            {
+                var reqData = await reader.ReadToEndAsync();
+                var account = new List<Account> { JsonConvert.DeserializeObject<Account>(reqData) };
+
+                var commandBus = new Dispatcher(
+                    name: "Command Bus",
+                    watchSlowMsg: false,
+                    slowMsgThreshold: TimeSpan.FromSeconds(100),
+                    slowCmdThreshold: TimeSpan.FromSeconds(100));
+
+                new AccountCommandHandler(_fixture.Repository, commandBus);
+
+                var cmd = new DepositCash()
+                {
+                    AccountId = account[0].AccountId,
+                    Fund = account[0].Fund
+                };
+
+                commandBus.Fire(cmd);
+
+                return JsonConvert.SerializeObject($"Cash deposited successfully");
+            }
+        }
+        [HttpPost("[action]")]
+        public async Task<string> WithdrawCash()
+        {
+            using (StreamReader reader = new StreamReader(Request.Body))
+            {
+                var reqData = await reader.ReadToEndAsync();
+                var account = new List<Account> { JsonConvert.DeserializeObject<Account>(reqData) };
+
+                var commandBus = new Dispatcher(
+                    name: "Command Bus",
+                    watchSlowMsg: false,
+                    slowMsgThreshold: TimeSpan.FromSeconds(100),
+                    slowCmdThreshold: TimeSpan.FromSeconds(100));
+
+                new AccountCommandHandler(_fixture.Repository, commandBus);
+
+                var cmd = new WithdrawCash()
+                {
+                    AccountId = account[0].AccountId,
+                    Fund = account[0].Fund
+                };
+
+                commandBus.Fire(cmd);
+
+                return JsonConvert.SerializeObject($"Cash withdrawn successfully");
+            }
+        }
+        [HttpPost("[action]")]
+        public async Task<string> WireTransfer()
+        {
+            using (StreamReader reader = new StreamReader(Request.Body))
+            {
+                var reqData = await reader.ReadToEndAsync();
+                var account = new List<Account> { JsonConvert.DeserializeObject<Account>(reqData) };
+
+                var commandBus = new Dispatcher(
+                    name: "Command Bus",
+                    watchSlowMsg: false,
+                    slowMsgThreshold: TimeSpan.FromSeconds(100),
+                    slowCmdThreshold: TimeSpan.FromSeconds(100));
+
+                new AccountCommandHandler(_fixture.Repository, commandBus);
+
+                var cmd = new WireTransfer()
+                {
+                    AccountId = account[0].AccountId,
+                    WireTransferDate = account[0].WireTransferDate,
+                    Fund = account[0].Fund
+                };
+
+                commandBus.Fire(cmd);
+
+                return JsonConvert.SerializeObject($"Wire transferred successfully");
+            }
+        }
     }
 }

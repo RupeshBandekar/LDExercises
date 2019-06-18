@@ -1,36 +1,38 @@
 import React, { Component } from 'react';
 
-export class DailyWireTransferLimit extends Component {
+export class DailyWireTransferLimit extends React.Component {
 
-    state = {
-        accountId: '',
-        dailyWireTransferLimit: 0.00,
-        message: ''
-    };
+    constructor(props){
+        super(props);
 
-    // componentWillReceiveProps(){
-    //     this.setState({overdraftLimit: this.props.account[0].overdraftLimit});
-    //     console.log("componentWillReceiveProps");
-    // }
+        this.state = {
+            accountId: '',
+            dailyWireTransferLimit: '000',
+            message: ''
+        };
+    }    
 
     componentWillReceiveProps(){
-        this.setState({dailyWireTransferLimit: this.props.account[0].dailyWireTransferLimit});
-        //console.log(this.state.overdraftLimit);
-    }
-
-    componentDidMount() {
-        this.isRefreshing = true;
+        if(this.state.dailyWireTransferLimit === '000' || this.state.accountId !== this.props.account[0].accountId)
+        {
+            this.setState({accountId: this.props.account[0].accountId,
+                dailyWireTransferLimit: this.props.account[0].dailyWireTransferLimit,
+                message: ''}); 
+        }
     }
 
     setDailyWireTransferLimit = (event) => {
         event.preventDefault();
+
+        if(this.state.dailyWireTransferLimit === '' || this.state.dailyWireTransferLimit === 0)
+        {
+            this.setState({message: <p style={{color: 'red'}}>Please enter daily wire transfer limit</p>});
+            return;
+        }
+
         this.postData('api/Home/SetDailyWireTransferLimit', {accountId: this.props.account[0].accountId, dailyWireTransferLimit: this.state.dailyWireTransferLimit})
             .then(data => this.setState({message: data})) //JSON-string from `response.json()` call
             .catch(error => console.error(error));
-        
-            //this.props.forcefulUpdate();
-        // this.props.setLoadAccountsFlag(true);
-        // this.isRefreshing = true;
     }
 
     postData = (url = '', data = {}) => {
@@ -52,25 +54,24 @@ export class DailyWireTransferLimit extends Component {
     }
 
     limitOnChange = (event) => {
-        // console.log("limitOnChange");
-        // console.log(this.isRefreshing);
-        // if(this.isRefreshing === true)
-        // {
-        //     this.props.setLoadAccountsFlag(false);
-        //     this.isRefreshing = false;
-        // }
-        this.setState({dailyWireTransferLimit: event.target.value})
+        this.setState({message: ''});
+
+        const re = /^\s*(?=.*[1-9])\d*(?:\.\d{1,2})?\s*$/;
+        if (event.target.value === '' || event.target.value === 0 || re.test(event.target.value)) {
+            this.setState({dailyWireTransferLimit: event.target.value});        
+        }
     }
 
     render(){
-        //console.log("overdraft limit rendered");
         return(
             <div>
                 <table className='table table-striped'>
                     <tbody>
                         <tr>
                             <td>Daily wire transfer limit:</td>
-                            <td><input type="text" value={this.state.dailyWireTransferLimit} onChange={event => this.limitOnChange(event)}></input></td>
+                            <td><input type="text" value={this.state.dailyWireTransferLimit} 
+                                onChange={event => this.limitOnChange(event)} required></input>
+                            </td>                            
                         </tr>
                         <tr>
                             <td></td>

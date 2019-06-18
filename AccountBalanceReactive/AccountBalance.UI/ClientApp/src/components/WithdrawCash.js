@@ -1,39 +1,52 @@
 import React, { Component } from 'react';
 
-export class OverdraftLimit extends Component {
+export class WithdrawCash extends Component {
 
     constructor(props){
         super(props);
 
         this.state = {
             accountId: '',
-            overdraftLimit: '000',
+            fund: 0,
             message: ''
         };
-    }
-    
+    }    
 
     componentWillReceiveProps(){
-        if(this.state.overdraftLimit === '000' || this.state.accountId !== this.props.account[0].accountId)
+        if(this.state.accountId !== this.props.account[0].accountId)
         {
             this.setState({accountId: this.props.account[0].accountId,
-                overdraftLimit: this.props.account[0].overdraftLimit,
+                fund: 0,
                 message: ''}); 
         }
     }
 
-    setOverdraftLimit = (event) => {
+    withdrawCash = (event) => {
         event.preventDefault();
 
-        if(this.state.overdraftLimit === '' || this.state.overdraftLimit === 0)
+        if(this.state.fund === '' || this.state.fund <= 0)
         {
-            this.setState({message: <p style={{color: 'red'}}>Please enter overdraft limit</p>});
+            this.setState({message: <p style={{color: 'red'}}>Please enter amount</p>});
             return;
         }
 
-        this.postData('api/Home/SetOverdraftLimit', {accountId: this.props.account[0].accountId, overdraftLimit: this.state.overdraftLimit})
-            .then(data => this.setState({message: data})) //JSON-string from `response.json()` call
+        if(this.props.account[0].accountState === 1)
+        {
+            this.setState({message: <p style={{color: 'red'}}>Account is blocked, cash withdraw unsuccessful</p>});
+            return;
+        }
+
+        if (this.props.account[0].overdraftLimit === 0 && this.props.account[0].availableFund - this.state.fund < 0)
+        {
+            this.setState({message: <p style={{color: 'red'}}>Insufficient fund"</p>});
+            return;
+        }
+
+        this.postData('api/Home/WithdrawCash', {accountId: this.props.account[0].accountId, fund: this.state.fund})
+            .then(data => this.handleResponse()) //JSON-string from `response.json()` call
             .catch(error => console.error(error));
+
+        this.setState({fund: 0});
     }
 
     postData = (url = '', data = {}) => {
@@ -54,12 +67,30 @@ export class OverdraftLimit extends Component {
             .then(response => response.json()); //response.json() parses JSON response into native Javascript objects 
     }
 
-    limitOnChange = (event) => {
+    handleResponse = () => {
+        let self = this;
+        
+        var data = this.props.refreshAccountsData();
+        var promise1 = Promise.resolve(data);
+        promise1.then(function(value){
+            let targetAccount = value.filter(x => x.accountId === self.props.account[0].accountId);
+            if(targetAccount[0].accountState === 1)
+            {
+                self.setState({message: 'Account blocked, cash withdraw unsuccessful'});
+            }
+            else
+            {
+                self.setState({message: 'Cash withdraw successful'});
+            }
+        });
+    }
+
+    fundOnChange = (event) => {
         this.setState({message: ''});
 
         const re = /^\s*(?=.*[1-9])\d*(?:\.\d{1,2})?\s*$/;
         if (event.target.value === '' || event.target.value === 0 || re.test(event.target.value)) {
-            this.setState({overdraftLimit: event.target.value});        
+            this.setState({fund: event.target.value});        
         }
     }
 
@@ -69,14 +100,14 @@ export class OverdraftLimit extends Component {
                 <table className='table table-striped'>
                     <tbody>
                         <tr>
-                            <td>Overdraft limit:</td>
-                            <td><input type="text" value={this.state.overdraftLimit} 
-                                onChange={event => this.limitOnChange(event)} required></input>
+                            <td>Withdraw fund: </td>
+                            <td><input type="text" value={this.state.fund} 
+                                onChange={event => this.fundOnChange(event)} required></input>
                             </td>                            
                         </tr>
                         <tr>
                             <td></td>
-                            <td><button onClick={this.setOverdraftLimit}>Set limit</button></td>
+                            <td><button onClick={this.withdrawCash}>Withdraw</button></td>
                         </tr>
                         <tr>
                             <td></td>

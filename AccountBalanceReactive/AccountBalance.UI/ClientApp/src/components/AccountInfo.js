@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
+import {AccountDashboard} from './AccountDashboard';
 import {OverdraftLimit} from './OverdraftLimit';
 import {DailyWireTransferLimit} from './DailyWireTransferLimit';
-import { AccountDashboard } from './AccountDashboard';
-
+import { DepositCheque } from './DepositCheque';
+import { DepositCash } from './DepositCash';
+import { WithdrawCash } from './WithdrawCash';
+import { WireTransfer } from './WireTransfer';
 
 export class AccountInfo extends Component {
     
@@ -59,19 +62,19 @@ export class AccountInfo extends Component {
                     <OverdraftLimit account={this.props.account}/>
                 </div>
                 <div id="wiretransferLimit" className="actionPanel" style={{display: 'none'}}>
-                    Daily wire transfer limit
+                    <DailyWireTransferLimit account={this.props.account}/>
                 </div>
                 <div id="depositCheque" className="actionPanel" style={{display: 'none'}}>
-                    Deposit Cheque
+                    <DepositCheque account={this.props.account}/>
                 </div>
                 <div id="depositCash" className="actionPanel" style={{display: 'none'}}>
-                    Deposit Cash
+                    <DepositCash account={this.props.account}/>
                 </div>
                 <div id="withdrawCash" className="actionPanel" style={{display: 'none'}}>
-                    Withdraw Cash
+                    <WithdrawCash account={this.props.account} refreshAccountsData={this.props.refreshAccountsData}/>
                 </div>
                 <div id="wiretransfer" className="actionPanel" style={{display: 'none'}}>
-                    Wire Transfer
+                    <WireTransfer account={this.props.account} refreshAccountsData={this.props.refreshAccountsData}/>
                 </div>
             </div>
         }
