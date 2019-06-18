@@ -10185,4 +10185,5 @@
       color: inherit;
       border-color: #dee2e6;
     }
+    .hidden { display:none; }
   }

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using AccountBalance.Reactive;
     using AccountBalance.Reactive.Events;
     using ReactiveDomain.Foundation;
@@ -56,22 +57,24 @@
 
         public void Handle(OverdraftLimitApplied message)
         {
+            Account = lstAccount.FirstOrDefault(x => x.AccountId == message.AccountId);
             if (Account == null)
             {
                 throw new ArgumentException($"Account id({message.AccountId}) not found.");
             }
             Account.OverdraftLimit = message.OverdraftLimit;
-            UpdateAccountList();
+            //UpdateAccountList(Account);
         }
 
         public void Handle(DailyWireTransferLimitApplied message)
         {
+            Account = lstAccount.FirstOrDefault(x => x.AccountId == message.AccountId);
             if (Account == null)
             {
                 throw new ArgumentException($"Account id({message.AccountId}) not found.");
             }
             Account.DailyWireTransferLimit = message.DailyWireTransferLimit;
-            UpdateAccountList();
+            //UpdateAccountList(Account);
         }
 
         public void Handle(ChequeDeposited message)
@@ -92,7 +95,7 @@
                 Account.AvailableFund = Account.AvailableFund + message.Fund;
                 if (Account.AccountState == AccountState.Blocked) Account.AccountState = AccountState.Unblocked;
             }
-            UpdateAccountList();
+            //UpdateAccountList(Account);
         }
 
         public void Handle(CashDeposited message)
@@ -105,7 +108,7 @@
             Account.AvailableFund = Account.AvailableFund + message.Fund;
             if (Account.AccountState == AccountState.Blocked) Account.AccountState = AccountState.Unblocked;
 
-            UpdateAccountList();
+            //UpdateAccountList(Account);
         }
 
         public void Handle(CashWithdrawn message)
@@ -117,7 +120,7 @@
 
             Account.AvailableFund = Account.AvailableFund - message.Fund;
 
-            UpdateAccountList();
+            //UpdateAccountList(Account);
         }
 
         public void Handle(WireTransferred message)
@@ -129,7 +132,7 @@
 
             Account.AvailableFund = Account.AvailableFund - message.Fund;
 
-            UpdateAccountList();
+            //UpdateAccountList(Account);
         }
 
         public void Handle(AccountBlocked message)
@@ -142,11 +145,11 @@
             Account.AccountState = AccountState.Blocked;
             Account.ReasonForAccountBlock = message.ReasonForAccountBlock;
 
-            UpdateAccountList();
+            //UpdateAccountList(Account);
         }
-        public void UpdateAccountList()
+        public void UpdateAccountList(Account account)
         {
-            var index = lstAccount.FindIndex(x => x.AccountId == Account.AccountId);
+            var index = lstAccount.FindIndex(x => x.AccountId == account.AccountId);
             lstAccount[index] = Account;
         }
     }

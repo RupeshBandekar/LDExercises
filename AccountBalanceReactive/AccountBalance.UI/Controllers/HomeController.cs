@@ -10,6 +10,7 @@ namespace AccountBalance.UI.Controllers
     using System.Runtime.InteropServices.WindowsRuntime;
     using System.Text;
     using AccountBalance.Reactive;
+    using AccountBalance.Reactive.Commands;
     using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
     using Newtonsoft.Json;
     using ReactiveDomain;
@@ -62,6 +63,61 @@ namespace AccountBalance.UI.Controllers
                 commandBus.Fire(cmd);
 
                 return JsonConvert.SerializeObject($"Account id '{accountId}' created successfully");
+            }
+        }
+
+        [HttpPost("[action]")]
+        public async Task<string> SetOverdraftLimit()
+        {
+            using (StreamReader reader = new StreamReader(Request.Body))
+            {
+                var reqData = await reader.ReadToEndAsync();
+                var account = new List<Account> { JsonConvert.DeserializeObject<Account>(reqData) };
+
+                var commandBus = new Dispatcher(
+                    name: "Command Bus",
+                    watchSlowMsg: false,
+                    slowMsgThreshold: TimeSpan.FromSeconds(100),
+                    slowCmdThreshold: TimeSpan.FromSeconds(100));
+
+                new AccountCommandHandler(_fixture.Repository, commandBus);
+
+                var cmd = new SetOverdraftLimit()
+                {
+                    AccountId = account[0].AccountId,
+                    OverdraftLimit = account[0].OverdraftLimit
+                };
+
+                commandBus.Fire(cmd);
+
+                return JsonConvert.SerializeObject($"Overdraft limit set successfully");
+            }
+        }
+        [HttpPost("[action]")]
+        public async Task<string> SetDailyWireTransferLimit()
+        {
+            using (StreamReader reader = new StreamReader(Request.Body))
+            {
+                var reqData = await reader.ReadToEndAsync();
+                var account = new List<Account> { JsonConvert.DeserializeObject<Account>(reqData) };
+
+                var commandBus = new Dispatcher(
+                    name: "Command Bus",
+                    watchSlowMsg: false,
+                    slowMsgThreshold: TimeSpan.FromSeconds(100),
+                    slowCmdThreshold: TimeSpan.FromSeconds(100));
+
+                new AccountCommandHandler(_fixture.Repository, commandBus);
+
+                var cmd = new SetDailyWireTransferLimit()
+                {
+                    AccountId = account[0].AccountId,
+                    DailyWireTransferLimit = account[0].DailyWireTransferLimit
+                };
+
+                commandBus.Fire(cmd);
+
+                return JsonConvert.SerializeObject($"Daily wire transfer limit set successfully");
             }
         }
     }

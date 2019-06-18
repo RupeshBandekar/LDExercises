@@ -35,6 +35,7 @@ export class NewAccount extends Component {
     }
   
     render () {
+      //console.log("New Account rendered");
       return (
         <form onSubmit={this.createNewAccount}>
           <div>
