@@ -56,28 +56,25 @@ export class Accounts extends Component {
       {
         this.setState({selectedAccount: account});
       }
-      //console.log("show account info called");
-      //this.props.captureAccountId(accountId);
-
     }
   
     renderAccountsTable (accounts) {
       return (
         <div>
           <div id="accountList">
-            <table className='table table-striped'>
+            <table className='table table-hover table-accounts-list table-striped'>
               <thead>
                 <tr>
-                  <th>Account Id</th>
-                  <th>Name</th>
+                  <th style={{width: '450px'}}>Account Id</th>
+                  <th style={{width: '430px'}}>Name</th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {accounts.map(account =>
                   <tr key={account.accountId}>
-                    <td><a onClick={() => this.enableAccountPanel(account.accountId)}>{account.accountId}</a></td>
-                    <td><a>{account.accountHolderName}</a></td>
+                    <td>{account.accountId}</td>
+                    <td>{account.accountHolderName}</td>
                     <td><button onClick={() => this.enableAccountPanel(account.accountId)}>View account</button></td>
                   </tr>
                 )}
@@ -91,7 +88,7 @@ export class Accounts extends Component {
     render () {
       //console.log(this.state.selectedAccount);
       let contents = this.state.loading
-        ? <p><em>Loading...</em></p>
+        ? <p><em>Loading all accounts...</em></p>
         : this.renderAccountsTable(this.state.accounts);
   
       return (

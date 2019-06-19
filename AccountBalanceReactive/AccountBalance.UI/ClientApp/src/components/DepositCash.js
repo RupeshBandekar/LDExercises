@@ -67,21 +67,25 @@ export class DepositCash extends Component {
     render(){
         return(
             <div>
-                <table className='table table-striped'>
+                <table className='table table-accounts-action'>
                     <tbody>
                         <tr>
-                            <td>Deposit fund: </td>
+                            <td style={{textAlign: 'right', width: '315px'}}>Deposit fund: </td>
                             <td><input type="text" value={this.state.fund} 
                                 onChange={event => this.fundOnChange(event)} required></input>
                             </td>                            
                         </tr>
                         <tr>
                             <td></td>
-                            <td><button onClick={this.depositCash}>Deposit</button></td>
+                            <td><button onClick={this.depositCash}>Deposit Cash</button></td>
                         </tr>
-                        <tr>
+                        <tr style={{height:'50px'}}>
                             <td></td>
                             <td>{this.state.message}</td>
+                        </tr>
+                        <tr style={{height: '109px'}}>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>

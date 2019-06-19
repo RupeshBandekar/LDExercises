@@ -230,7 +230,15 @@
   }
   
   button {
-    border-radius: 0;
+    border-radius: 5px;
+    padding: 5px 15px;
+    font-weight: 500;
+    color: #ffffff;
+    background-color: #116530;
+  }
+  button:hover {
+    color: #ffffff;
+    background-color: #419b56;
   }
   
   button:focus {
@@ -1569,7 +1577,7 @@
   
   .table-hover tbody tr:hover {
     color: #212529;
-    background-color: rgba(0, 0, 0, 0.075);
+    background-color: rgba(0, 0, 0, 0.12);
   }
   
   .table-primary,
@@ -10186,4 +10194,152 @@
       border-color: #dee2e6;
     }
     .hidden { display:none; }
+  }
+
+  /*****************************************/
+  .table-create-new,
+  .table-create-new > td {
+    background-color: #c3e6cb;
+    border-bottom: solid 7px;
+  }
+  
+  .table-create-new th{
+    color: #ffffff;
+    background-color: #419b56;
+    font-size: 25px;
+  }
+
+  .table-create-new th,
+  .table-create-new td,
+  .table-create-new thead th,
+  .table-create-new tbody + tbody {
+    border-color: #419b56;
+  }
+  
+  .table-hover .table-create-new:hover {
+    background-color: #b1dfbb;
+  }
+  
+  .table-hover .table-create-new:hover > td,
+  .table-hover .table-create-new:hover > th {
+    background-color: #b1dfbb;
+  }
+
+  .table-create-new tr td label {
+    color: #116530;
+    font-weight: 500;
+  }
+
+  /********************************************/
+  .table-accounts-list,
+  .table-accounts-list > td {
+    background-color: #e8f1ea;
+    border-bottom: solid 7px;
+  }
+  
+  .table-accounts-list th{
+    color: #ffffff;
+    background-color: #419b56;
+    font-size: 18px;
+  }
+
+  .table-accounts-list th,
+  .table-accounts-list td,
+  .table-accounts-list thead th,
+  .table-accounts-list tbody + tbody {
+    border-color: #419b56;
+  }
+
+  .table-accounts-list tr td {
+    color: #116530;
+    font-weight: 500;
+  }
+
+  .table-accounts-list .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+  /******************************************/
+  .table-accounts-dashboard,
+  .table-accounts-dashboard > td {
+    background-color: #e8f1ea;
+    border-bottom: solid 7px;
+  }
+  
+  .table-accounts-dashboard th{
+    color: #ffffff;
+    background-color: #419b56;
+    font-size: 18px;
+  }
+
+  .table-accounts-dashboard th,
+  .table-accounts-dashboard td,
+  .table-accounts-dashboard thead th,
+  .table-accounts-dashboard tbody + tbody {
+    border-color: #419b56;
+  }
+
+  .table-accounts-dashboard tr td {
+    color: #116530;
+    font-weight: 500;
+  }
+
+  .table-accounts-dashboard .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+  /******************************************/
+  .table-accounts-action,
+  .table-accounts-action > td {
+    background-color: #e8f1ea;
+    border-top: solid 3px #116530;
+    border-right:  solid 3px #116530;
+    border-bottom: solid 5px #116530;
+  }
+  
+  .table-accounts-action th{
+    color: #ffffff;
+    background-color: #419b56;
+    font-size: 18px;
+  }
+
+  .table-accounts-action th,
+  .table-accounts-action td,
+  .table-accounts-action thead th,
+  .table-accounts-action tbody + tbody {
+    border-color: #e8f1ea;
+  }
+
+  .table-accounts-action tr td {
+    color: #116530;
+    font-weight: 500;
+  }
+  /******************************************/
+  .backtoaccounts {
+    text-align: right;
+    background-color: #116530;
+    font-size: 20px;
+    color: #ffffff;
+    padding: 5px 10px;
+  }
+  /******************************************/
+  .accountaction {
+    width: 210px;
+    font-weight: 500;
+    float: left;
+  }
+  .accountaction ul {
+    list-style-type: none;
+    background-color: #e8f1ea;
+    padding: 0px;
+    border: solid 3px #116530;
+  }
+  .accountaction ul li {
+    padding: 10px;
+    border-bottom: solid 2px #116530;
+  }
+  .accountaction ul li:hover {
+    background-color: #116530;
+    color: #ffffff;
+  }
+  .actionPanel {
+    width: 900px;
   }

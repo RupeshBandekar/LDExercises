@@ -39,16 +39,24 @@ export class NewAccount extends Component {
       return (
         <form onSubmit={this.createNewAccount}>
           <div>
-            <table className='table table-striped'>         
-              <tbody>            
+            <table className='table table-create-new'>  
+              <thead>
                 <tr>
-                  <td>Account holder name:</td>
+                  <th colSpan="2">
+                    Create New Account
+                  </th>
+                </tr>
+              </thead>       
+              <tbody>
+                <tr>
+                  <td style={{width: '250px'}}><label>Account Holder Name:</label></td>
                   <td><input id="txtAccountHolderName" type="text" value={this.state.accountHolderName} 
-                  onChange={event => {this.setState({accountHolderName: event.target.value, message: ''});}} required/></td>
+                  onChange={event => {this.setState({accountHolderName: event.target.value, message: ''});}} required
+                  style={{width: '300px'}}/></td>
                 </tr>
                 <tr>
                   <td></td>
-                  <td><button id="btnCreate">Create</button></td>
+                  <td><button id="btnCreate">Create Account</button></td>
                 </tr>
                 <tr>
                   <td></td>

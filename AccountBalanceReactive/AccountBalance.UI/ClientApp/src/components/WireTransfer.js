@@ -26,18 +26,6 @@ export class WireTransfer extends Component {
     wireTransfer = (event) => {
         event.preventDefault();
 
-        if(this.state.date === '')
-        {
-            this.setState({message: <p style={{color: 'red'}}>Please enter date</p>});
-            return;
-        }
-
-        if(this.state.date < new Date())
-        {
-            this.setState({message: <p style={{color: 'red'}}>Please enter valid date</p>});
-            return;
-        }
-
         if(this.state.fund === '' || this.state.fund <= 0)
         {
             this.setState({message: <p style={{color: 'red'}}>Please enter amount</p>});
@@ -56,7 +44,10 @@ export class WireTransfer extends Component {
             return;
         }
 
-        this.postData('api/Home/WireTransfer', {accountId: this.props.account[0].accountId, wireTransferDate: this.state.date, fund: this.state.fund})
+        var today = new Date();
+        var date = (today.getMonth()+1) + '/' + today.getDate() + '/' + today.getFullYear();
+
+        this.postData('api/Home/WireTransfer', {accountId: this.props.account[0].accountId, wireTransferDate: date, fund: this.state.fund})
             .then(data => this.handleResponse()) //JSON-string from `response.json()` call
             .catch(error => console.error(error));
 
@@ -90,18 +81,13 @@ export class WireTransfer extends Component {
             let targetAccount = value.filter(x => x.accountId === self.props.account[0].accountId);
             if(targetAccount[0].accountState === 1)
             {
-                self.setState({message: 'Account blocked, wire transfer unsuccessful'});
+                self.setState({message: <p style={{color: 'red'}}>Account blocked, wire transfer unsuccessful</p>});
             }
             else
             {
                 self.setState({message: 'Wire transfer successful'});
             }
         });
-    }
-
-    dateOnChange = (event) => {          
-        this.setState({message: ''});
-        this.setState({date: event.target.value});
     }
 
     fundOnChange = (event) => {
@@ -116,16 +102,10 @@ export class WireTransfer extends Component {
     render(){
         return(
             <div>
-                <table className='table table-striped'>
+                <table className='table table-accounts-action'>
                     <tbody>
                         <tr>
-                            <td>Wire transfer date: </td>
-                            <td><input type="date" value={this.state.date} 
-                                onChange={event => this.dateOnChange(event)} required></input>
-                            </td>                            
-                        </tr>
-                        <tr>
-                            <td>Wire transfer fund: </td>
+                            <td style={{textAlign: 'right', width: '315px'}}>Wire transfer fund: </td>
                             <td><input type="text" value={this.state.fund} 
                                 onChange={event => this.fundOnChange(event)} required></input>
                             </td>                            
@@ -134,9 +114,13 @@ export class WireTransfer extends Component {
                             <td></td>
                             <td><button onClick={this.wireTransfer}>Wire Transfer</button></td>
                         </tr>
-                        <tr>
+                        <tr style={{height:'50px'}}>
                             <td></td>
                             <td>{this.state.message}</td>
+                        </tr>
+                        <tr style={{height: '109px'}}>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>

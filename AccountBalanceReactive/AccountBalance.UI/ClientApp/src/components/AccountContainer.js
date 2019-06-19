@@ -38,7 +38,7 @@ export class AccountContainer extends Component {
         //console.log("Container rendered");
         return(
             <div>
-                <h1>Account Balance</h1>
+                {/* <h1>Account Balance</h1> */}
                 <div id="newAccount">
                 <NewAccount />
                 </div>

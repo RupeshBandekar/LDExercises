@@ -66,21 +66,25 @@ export class OverdraftLimit extends Component {
     render(){
         return(
             <div>
-                <table className='table table-striped'>
+                <table className='table table-accounts-action'>
                     <tbody>
                         <tr>
-                            <td>Overdraft limit:</td>
+                            <td style={{textAlign: 'right', width: '315px'}}>Overdraft limit:</td>
                             <td><input type="text" value={this.state.overdraftLimit} 
                                 onChange={event => this.limitOnChange(event)} required></input>
                             </td>                            
                         </tr>
                         <tr>
                             <td></td>
-                            <td><button onClick={this.setOverdraftLimit}>Set limit</button></td>
+                            <td><button onClick={this.setOverdraftLimit}>Set Overdraft Limit</button></td>
                         </tr>
-                        <tr>
+                        <tr style={{height:'50px'}}>
                             <td></td>
                             <td>{this.state.message}</td>
+                        </tr>
+                        <tr style={{height: '109px'}}>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>

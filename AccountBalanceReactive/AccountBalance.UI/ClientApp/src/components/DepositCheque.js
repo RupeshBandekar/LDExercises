@@ -79,27 +79,31 @@ export class DepositCheque extends Component {
     render(){
         return(
             <div>
-                <table className='table table-striped'>
+                <table className='table table-accounts-action'>
                     <tbody>
                         <tr>
-                            <td>Cheque deposit date: </td>
+                            <td style={{textAlign: 'right', width: '315px'}}>Cheque deposit date: </td>
                             <td><input type="date" value={this.state.depositDate} 
                                 onChange={event => this.dateOnChange(event)} required></input>
                             </td>                            
                         </tr>
                         <tr>
-                            <td>Cheque deposit fund: </td>
+                            <td style={{textAlign: 'right', width: '315px'}}>Cheque deposit fund: </td>
                             <td><input type="text" value={this.state.fund} 
                                 onChange={event => this.fundOnChange(event)} required></input>
                             </td>                            
                         </tr>
                         <tr>
                             <td></td>
-                            <td><button onClick={this.depositCheque}>Deposit</button></td>
+                            <td><button onClick={this.depositCheque}>Deposit Cheque</button></td>
                         </tr>
-                        <tr>
+                        <tr style={{height:'50px'}}>
                             <td></td>
                             <td>{this.state.message}</td>
+                        </tr>
+                        <tr style={{height: '54px'}}>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>

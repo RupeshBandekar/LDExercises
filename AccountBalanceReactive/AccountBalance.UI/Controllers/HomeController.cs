@@ -62,7 +62,7 @@ namespace AccountBalance.UI.Controllers
 
                 commandBus.Fire(cmd);
 
-                return JsonConvert.SerializeObject($"Account id '{accountId}' created successfully");
+                return JsonConvert.SerializeObject($"Account for '{account[0].AccountHolderName}' created successfully");
             }
         }
 

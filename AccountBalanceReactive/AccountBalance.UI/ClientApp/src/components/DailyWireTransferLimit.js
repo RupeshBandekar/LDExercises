@@ -65,21 +65,25 @@ export class DailyWireTransferLimit extends React.Component {
     render(){
         return(
             <div>
-                <table className='table table-striped'>
+                <table className='table table-accounts-action'>
                     <tbody>
                         <tr>
-                            <td>Daily wire transfer limit:</td>
+                            <td style={{textAlign: 'right', width: '315px'}}>Daily wire transfer limit:</td>
                             <td><input type="text" value={this.state.dailyWireTransferLimit} 
                                 onChange={event => this.limitOnChange(event)} required></input>
                             </td>                            
                         </tr>
                         <tr>
                             <td></td>
-                            <td><button onClick={this.setDailyWireTransferLimit}>Set limit</button></td>
+                            <td><button onClick={this.setDailyWireTransferLimit}>Set Wire Transfer Limit</button></td>
                         </tr>
-                        <tr>
+                        <tr style={{height:'50px'}}>
                             <td></td>
                             <td>{this.state.message}</td>
+                        </tr>
+                        <tr style={{height: '109px'}}>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>

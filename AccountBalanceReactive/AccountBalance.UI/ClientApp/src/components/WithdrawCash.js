@@ -76,7 +76,7 @@ export class WithdrawCash extends Component {
             let targetAccount = value.filter(x => x.accountId === self.props.account[0].accountId);
             if(targetAccount[0].accountState === 1)
             {
-                self.setState({message: 'Account blocked, cash withdraw unsuccessful'});
+                self.setState({message: <p style={{color: 'red'}}>Account blocked, cash withdraw unsuccessful</p>});
             }
             else
             {
@@ -97,21 +97,25 @@ export class WithdrawCash extends Component {
     render(){
         return(
             <div>
-                <table className='table table-striped'>
+                <table className='table table-accounts-action'>
                     <tbody>
                         <tr>
-                            <td>Withdraw fund: </td>
+                            <td style={{textAlign: 'right', width: '315px'}}>Withdraw fund: </td>
                             <td><input type="text" value={this.state.fund} 
                                 onChange={event => this.fundOnChange(event)} required></input>
                             </td>                            
                         </tr>
                         <tr>
                             <td></td>
-                            <td><button onClick={this.withdrawCash}>Withdraw</button></td>
+                            <td><button onClick={this.withdrawCash}>Withdraw Cash</button></td>
                         </tr>
-                        <tr>
+                        <tr style={{height:'50px'}}>
                             <td></td>
                             <td>{this.state.message}</td>
+                        </tr>
+                        <tr style={{height: '109px'}}>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>

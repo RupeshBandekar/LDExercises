@@ -88,7 +88,11 @@
             if (message.ClearanceBusinessDay.Date < DateTime.Today.Date)
             {
                 Account.AvailableFund = Account.AvailableFund + message.Fund;
-                if (Account.AccountState == AccountState.Blocked) Account.AccountState = AccountState.Unblocked;
+                if (Account.AccountState == AccountState.Blocked)
+                {
+                    Account.AccountState = AccountState.Unblocked;
+                    Account.ReasonForAccountBlock = "";
+                }
             }
             else if (message.ClearanceBusinessDay.Date == DateTime.Today.Date &&
                      DateTime.Now.TimeOfDay >= Convert.ToDateTime("09:00:00 AM").TimeOfDay)
