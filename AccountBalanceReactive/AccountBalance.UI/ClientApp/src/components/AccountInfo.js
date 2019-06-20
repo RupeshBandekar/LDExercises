@@ -20,7 +20,7 @@ export class AccountInfo extends Component {
         {
             panels[i].style.display = "none";
         }
-        if(panelName != "")
+        if(panelName !== "")
         {
             var panel = document.getElementById(panelName);
             panel.style.display = "inline-block";

@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import {NewAccount} from './NewAccount';
 import {Accounts} from './Accounts';
-import { AccountInfo } from './AccountInfo';
 
 export class AccountContainer extends Component {
     state= {

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-export class DailyWireTransferLimit extends React.Component {
+export class DailyWireTransferLimit extends Component {
 
     constructor(props){
         super(props);

@@ -39,7 +39,7 @@ export class Accounts extends Component {
     updateSelectedAccount = (data) => { 
       if(data.length > 0 && this.state.selectedAccount.length > 0)
       {
-        var account = data.filter(x => x.accountId == this.state.selectedAccount[0].accountId);
+        var account = data.filter(x => x.accountId === this.state.selectedAccount[0].accountId);
         this.setState({selectedAccount: account});
       }
     };
