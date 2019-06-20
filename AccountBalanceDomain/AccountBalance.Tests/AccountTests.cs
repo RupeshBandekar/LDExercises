@@ -409,7 +409,7 @@
         }
 
         [Theory]
-        [InlineData(100.00, 500.00, 700.00, 50.00)]
+        [InlineData(100.00, 500.00, 700.00, 100.00)]
         [Trait("Account_Balance", "9_Unblock_Account_On_Available_Fund")]
         public void should_unblock_account_on_cash_deposit(decimal availableFund, decimal overdraftLimit,
             decimal fundToWithdraw, decimal depositFund)
@@ -419,6 +419,7 @@
             account.DepositCash(availableFund);
             Assert.Throws<OperationCanceledException>(() => account.WithdrawCash(fundToWithdraw));
             account.DepositCash(depositFund);
+            account.WithdrawCash(fundToWithdraw);
             var accountUnblockedEvent = account.GetEvents();
             Assert.Equal(6, accountUnblockedEvent.Count);
             Assert.IsType<AccountCreated>(accountUnblockedEvent[0]);
@@ -427,7 +428,7 @@
             Assert.IsType<AccountBlocked>(accountUnblockedEvent[3]);
             Assert.Equal("Overdraft limit breached", ((AccountBlocked)accountUnblockedEvent[3]).ReasonForAccountBlock);
             Assert.IsType<CashDeposited>(accountUnblockedEvent[4]);
-            Assert.IsType<AccountUnblocked>(accountUnblockedEvent[5]);
+            Assert.IsType<CashWithdrawn>(accountUnblockedEvent[5]);
         }
 
         [Fact]
@@ -438,18 +439,17 @@
             account.SetOverdraftLimit(500.00M);
             account.DepositCash(1000.00M);
             Assert.Throws<OperationCanceledException>(() => account.WithdrawCash(2000.00M));
-            account.DepositCheque(1000.00M, DateTime.Now.AddDays(-1));
+            account.DepositCheque(1000.00M, DateTime.Now.AddDays(-7));
             account.WithdrawCash(500M);
             var accountUnblockedEvent = account.GetEvents();
-            Assert.Equal(7, accountUnblockedEvent.Count);
+            Assert.Equal(6, accountUnblockedEvent.Count);
             Assert.IsType<AccountCreated>(accountUnblockedEvent[0]);
             Assert.IsType<OverdraftLimitApplied>(accountUnblockedEvent[1]);
             Assert.IsType<CashDeposited>(accountUnblockedEvent[2]);
             Assert.IsType<AccountBlocked>(accountUnblockedEvent[3]);
             Assert.Equal("Overdraft limit breached", ((AccountBlocked)accountUnblockedEvent[3]).ReasonForAccountBlock);
             Assert.IsType<ChequeDeposited>(accountUnblockedEvent[4]);
-            Assert.IsType<AccountUnblocked>(accountUnblockedEvent[5]);
-            Assert.IsType<CashWithdrawn>(accountUnblockedEvent[6]);
+            Assert.IsType<CashWithdrawn>(accountUnblockedEvent[5]);
         }
     }
 }

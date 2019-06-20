@@ -103,14 +103,4 @@
             ReasonForAccountBlock = reasonForAccountBlock;
         }
     }
-
-    public class AccountUnblocked : IBaseAccountEvent
-    {
-        public readonly Guid AccountId;
-
-        public AccountUnblocked(Guid accountId)
-        {
-            AccountId = accountId;
-        }
-    }
 }

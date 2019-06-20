@@ -66,9 +66,6 @@ namespace AccountBalanceDomain
             var chequeDeposited = new ChequeDeposited(_accountId, depositFund, depositDate, clearanceBusinessDay);
             _allAccountEvents.Add(chequeDeposited);
             ApplyAccountEvents(chequeDeposited);
-
-            if (_state == AccountState.Blocked)
-                UnblockAccount();
         }
 
         private DateTime GetChequeClearanceDay(DateTime depositDate)
@@ -140,9 +137,6 @@ namespace AccountBalanceDomain
             var cashDeposited = new CashDeposited(_accountId, fund);
             _allAccountEvents.Add(cashDeposited);
             ApplyAccountEvents(cashDeposited);
-
-            if (_state == AccountState.Blocked)
-                UnblockAccount();
         }
 
         public void WithdrawCash(decimal fundToWithdraw)
@@ -217,13 +211,6 @@ namespace AccountBalanceDomain
             ApplyAccountEvents(accountBlocked);
         }
 
-        private void UnblockAccount()
-        {
-            var accountUnblocked = new AccountUnblocked(_accountId);
-            _allAccountEvents.Add(accountUnblocked);
-            ApplyAccountEvents(accountUnblocked);
-        }
-
         private void ApplyAccountEvents(IBaseAccountEvent e)
         {
             if (e.GetType() == typeof(AccountCreated))
@@ -236,25 +223,34 @@ namespace AccountBalanceDomain
             }
             else if (e.GetType() == typeof(DailyWireTransferLimitApplied))
             {
-                DailyWireTransferLimitApplied tEvent = (DailyWireTransferLimitApplied) e;
+                var tEvent = (DailyWireTransferLimitApplied) e;
                 _dailyWireTransferLimit = tEvent.DailyWireTransferLimit;
             }
             else if (e.GetType() == typeof(ChequeDeposited))
             {
-                ChequeDeposited tEvent = (ChequeDeposited) e;
+                var tEvent = (ChequeDeposited) e;
                 if (tEvent.ClearanceBusinessDay.Date < DateTime.Today.Date)
                 {
                     _availableFund = _availableFund + tEvent.Fund;
+
+                    if (_state == AccountState.Blocked)
+                        _state = AccountState.Unblocked;
                 }
                 else if (tEvent.ClearanceBusinessDay.Date == DateTime.Today.Date &&
                          DateTime.Now.TimeOfDay >= Convert.ToDateTime("09:00:00 AM").TimeOfDay)
                 {
                     _availableFund = _availableFund + tEvent.Fund;
+
+                    if (_state == AccountState.Blocked)
+                        _state = AccountState.Unblocked;
                 }
             }
             else if (e.GetType() == typeof(CashDeposited))
             {
                 _availableFund = _availableFund + ((CashDeposited) e).Fund;
+
+                if (_state == AccountState.Blocked)
+                    _state = AccountState.Unblocked;
             }
             else if (e.GetType() == typeof(CashWithdrawn))
             {
@@ -273,10 +269,6 @@ namespace AccountBalanceDomain
             else if (e.GetType() == typeof(AccountBlocked))
             {
                 _state = AccountState.Blocked;
-            }
-            else if (e.GetType() == typeof(AccountUnblocked))
-            {
-                _state = AccountState.Unblocked;
             }
         }
 
