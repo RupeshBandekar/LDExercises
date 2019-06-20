@@ -114,11 +114,11 @@ export class WireTransfer extends Component {
                             <td></td>
                             <td><button onClick={this.wireTransfer}>Wire Transfer</button></td>
                         </tr>
-                        <tr style={{height:'50px'}}>
+                        <tr style={{height:'79px'}}>
                             <td></td>
                             <td>{this.state.message}</td>
                         </tr>
-                        <tr style={{height: '109px'}}>
+                        <tr style={{height: '80px'}}>
                             <td></td>
                             <td></td>
                         </tr>

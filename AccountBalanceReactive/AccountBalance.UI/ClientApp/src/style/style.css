@@ -172,7 +172,7 @@
   
   a:not([href]):not([tabindex]):hover, a:not([href]):not([tabindex]):focus {
     color: inherit;
-    text-decoration: underline;
+    /* text-decoration: underline; */
     cursor: pointer;
   }
   
